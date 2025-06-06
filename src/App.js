@@ -269,49 +269,7 @@ function App() {
     });
   };
 
-  // Function to process alerts and handle coordinates
-  const processAlertsWithCoordinates = async (alertsArray) => {
-    const processedAlerts = [];
-    
-    for (const alert of alertsArray) {
-      let processedAlert = { ...alert };
-      
-      // Check if alert already has coordinates
-      if (alert.coordinates && alert.coordinates.lat && alert.coordinates.lng) {
-        // Use existing coordinates
-        processedAlert.coordinates = {
-          ...alert.coordinates,
-          source: 'provided'
-        };
-      } else if (alert.lat && alert.lng) {
-        // Handle case where coordinates are directly on the alert object
-        processedAlert.coordinates = {
-          lat: parseFloat(alert.lat),
-          lng: parseFloat(alert.lng),
-          country: alert.country || 'Unknown',
-          source: 'provided'
-        };
-      } else {
-        // No coordinates provided, need to geocode
-        try {
-          const geocoded = await geocodingServiceRef.current.geocodeAlert(alert);
-          if (geocoded && geocoded.coordinates) {
-            processedAlert.coordinates = {
-              ...geocoded.coordinates,
-              source: 'geocoded'
-            };
-          }
-        } catch (error) {
-          console.warn(`Failed to geocode alert: ${alert.title}`, error);
-          // Alert will remain without coordinates
-        }
-      }
-      
-      processedAlerts.push(processedAlert);
-    }
-    
-    return processedAlerts;
-  };
+
 
   useEffect(() => {
     geocodingServiceRef.current = new GeocodingService();
@@ -321,63 +279,109 @@ function App() {
         const response = await fetch("https://disaster-api-dohm.onrender.com/disaster-news");
         const data = await response.json();
 
+        console.log("Raw data received:", data.slice(0, 2)); // Debug: check first 2 items
+
         // Sort the alerts by date before processing
         const sortedAlerts = sortAlertsByDate(data);
         setAlerts(sortedAlerts);
-        setIsGeocoding(true);
-        setGeocodingProgress(0);
-
-        // Process alerts to handle both provided and geocoded coordinates
-        const processedAlerts = [];
-        let processed = 0;
         
-        for (const alert of sortedAlerts) {
+        // First, set alerts with existing coordinates immediately
+        const alertsWithExistingCoords = sortedAlerts.map(alert => {
           let processedAlert = { ...alert };
           
-          // Check if alert already has coordinates
+          // Check if alert already has coordinates in various formats
           if (alert.coordinates && alert.coordinates.lat && alert.coordinates.lng) {
-            // Use existing coordinates
             processedAlert.coordinates = {
-              ...alert.coordinates,
+              lat: parseFloat(alert.coordinates.lat),
+              lng: parseFloat(alert.coordinates.lng),
+              country: alert.coordinates.country || alert.country || 'Unknown',
               source: 'provided'
             };
+            console.log("Found coordinates in alert.coordinates:", processedAlert.coordinates);
           } else if (alert.lat && alert.lng) {
-            // Handle case where coordinates are directly on the alert object
             processedAlert.coordinates = {
               lat: parseFloat(alert.lat),
               lng: parseFloat(alert.lng),
               country: alert.country || 'Unknown',
               source: 'provided'
             };
-          } else {
-            // No coordinates provided, need to geocode
-            try {
-              const geocoded = await geocodingServiceRef.current.geocodeAlert(alert);
-              if (geocoded && geocoded.coordinates) {
-                processedAlert.coordinates = {
-                  ...geocoded.coordinates,
-                  source: 'geocoded'
-                };
-              }
-            } catch (error) {
-              console.warn(`Failed to geocode alert: ${alert.title}`, error);
-              // Alert will remain without coordinates
-            }
+            console.log("Found coordinates in alert.lat/lng:", processedAlert.coordinates);
+          } else if (alert.latitude && alert.longitude) {
+            processedAlert.coordinates = {
+              lat: parseFloat(alert.latitude),
+              lng: parseFloat(alert.longitude),
+              country: alert.country || 'Unknown',
+              source: 'provided'
+            };
+            console.log("Found coordinates in alert.latitude/longitude:", processedAlert.coordinates);
           }
           
-          processedAlerts.push(processedAlert);
-          processed++;
-          
-          // Update progress
-          const progress = Math.round((processed / sortedAlerts.length) * 100);
-          setGeocodingProgress(progress);
-        }
+          return processedAlert;
+        });
 
-        // Sort processed data to maintain chronological order
-        const sortedProcessedAlerts = sortAlertsByDate(processedAlerts);
-        setGeocodedAlerts(sortedProcessedAlerts);
-        setFilteredAlerts(sortedProcessedAlerts);
-        setIsGeocoding(false);
+        setGeocodedAlerts(alertsWithExistingCoords);
+        setFilteredAlerts(alertsWithExistingCoords);
+
+        // Count how many already have coordinates
+        const existingCoordsCount = alertsWithExistingCoords.filter(alert => alert.coordinates).length;
+        console.log(`${existingCoordsCount} alerts already have coordinates`);
+
+        // Now geocode the remaining alerts
+        if (existingCoordsCount < sortedAlerts.length) {
+          setIsGeocoding(true);
+          setGeocodingProgress(0);
+
+          const finalProcessedAlerts = [];
+          let processed = 0;
+          
+          for (const alert of alertsWithExistingCoords) {
+            let finalAlert = { ...alert };
+            
+            // If no coordinates yet, try geocoding
+            if (!finalAlert.coordinates) {
+              try {
+                console.log(`Geocoding alert: ${alert.title}`);
+                const geocoded = await geocodingServiceRef.current.geocodeAlert(alert);
+                if (geocoded && geocoded.coordinates && geocoded.coordinates.lat && geocoded.coordinates.lng) {
+                  finalAlert.coordinates = {
+                    lat: parseFloat(geocoded.coordinates.lat),
+                    lng: parseFloat(geocoded.coordinates.lng),
+                    country: geocoded.coordinates.country || 'Unknown',
+                    source: 'geocoded'
+                  };
+                  console.log("Geocoded successfully:", finalAlert.coordinates);
+                } else {
+                  console.log("Geocoding failed for:", alert.title);
+                }
+              } catch (error) {
+                console.warn(`Failed to geocode alert: ${alert.title}`, error);
+              }
+            }
+            
+            finalProcessedAlerts.push(finalAlert);
+            processed++;
+            
+            // Update progress
+            const progress = Math.round((processed / sortedAlerts.length) * 100);
+            setGeocodingProgress(progress);
+
+            // Update the state periodically during geocoding
+            if (processed % 5 === 0 || processed === sortedAlerts.length) {
+              const sortedFinalAlerts = sortAlertsByDate(finalProcessedAlerts);
+              setGeocodedAlerts([...sortedFinalAlerts]);
+              setFilteredAlerts([...sortedFinalAlerts]);
+            }
+          }
+
+          // Final update
+          const sortedFinalAlerts = sortAlertsByDate(finalProcessedAlerts);
+          setGeocodedAlerts(sortedFinalAlerts);
+          setFilteredAlerts(sortedFinalAlerts);
+          setIsGeocoding(false);
+
+          const finalCoordsCount = sortedFinalAlerts.filter(alert => alert.coordinates).length;
+          console.log(`Final result: ${finalCoordsCount} alerts have coordinates`);
+        }
       } catch (error) {
         console.error("Failed to fetch alerts:", error);
         setIsGeocoding(false);
@@ -406,12 +410,28 @@ function App() {
   };
 
   // Separate alerts with coordinates (both provided and geocoded)
-  const currentAlertsWithCoordinates = currentAlerts.filter(alert => 
-    alert.coordinates && alert.coordinates.lat && alert.coordinates.lng
-  );
+  const currentAlertsWithCoordinates = currentAlerts.filter(alert => {
+    const hasCoords = alert.coordinates && 
+                     alert.coordinates.lat !== undefined && 
+                     alert.coordinates.lng !== undefined &&
+                     !isNaN(alert.coordinates.lat) && 
+                     !isNaN(alert.coordinates.lng);
+    
+    if (hasCoords) {
+      console.log(`Alert "${alert.title}" has coordinates:`, alert.coordinates);
+    }
+    
+    return hasCoords;
+  });
+  
+  console.log(`Current page: ${currentAlertsWithCoordinates.length} alerts with coordinates out of ${currentAlerts.length} total`);
   
   const totalAlertsWithCoordinates = filteredAlerts.filter(alert => 
-    alert.coordinates && alert.coordinates.lat && alert.coordinates.lng
+    alert.coordinates && 
+    alert.coordinates.lat !== undefined && 
+    alert.coordinates.lng !== undefined &&
+    !isNaN(alert.coordinates.lat) && 
+    !isNaN(alert.coordinates.lng)
   ).length;
 
   // Enhanced statistics including coordinate sources
