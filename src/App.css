@@ -1,38 +1,217 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* Base styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #0d2c52;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.App {
+  min-height: 100vh;
+  background-color: #0d2c52;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes App-logo-spin {
-  from {
+/* Header */
+.hamburger-btn {
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: none;
+}
+
+.desktop-filter {
+  display: block;
+}
+
+/* Responsive Controls */
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: block;
+  }
+
+  .desktop-filter {
+    display: none;
+  }
+}
+
+/* Alert Card and Layout */
+.section-title {
+  font-size: 1.8rem;
+  margin: 20px 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+.alerts-section {
+  padding: 40px 16px;
+  background-color: #0d2c52;
+  display: flex;
+  justify-content: center;
+}
+
+.alerts-grid {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.alert-card {
+  background-color: #1c355c;
+  border: 1px solid #2e4a7d;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alert-card:hover {
+  transform: scale(1.01);
+}
+
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.alert-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+}
+
+.badge-traffic {
+  background-color: #e74c3c;
+}
+
+.badge-weather {
+  background-color: #f39c12;
+}
+
+.badge-emergency {
+  background-color: #e84393;
+}
+
+.alert-time {
+  font-size: 0.85rem;
+  color: #d3d3d3;
+}
+
+.alert-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.alert-description {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  color: #e0e0e0;
+}
+
+.alert-location {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-section {
+  width: 100%;
+  height: 400px;
+}
+
+@media (min-width: 1024px) {
+  .alerts-grid {
+    padding: 0 32px;
+  }
+}
+
+button {
+  background: #1a4b9c;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+
+.runner-loader {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+.runner-loader::after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #4CAF50;
+  border-color: #4CAF50 transparent #4CAF50 transparent;
+  animation: runnerSpin 1.2s linear infinite;
+}
+
+@keyframes runnerSpin {
+  0% {
     transform: rotate(0deg);
   }
-  to {
+  100% {
     transform: rotate(360deg);
   }
+}
+
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem 0; /* top and bottom spacing */
+}
+
+.pagination button,
+.pagination select {
+  padding: 0.4rem 0.8rem;
+  background-color: #1a4480;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pagination button:disabled {
+  background-color: #888;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  color: white;
+  font-size: 0.9rem;
 }

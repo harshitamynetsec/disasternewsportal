@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "title": "Flood Warning",
+    "location": "Ludhiana, Punjab",
+    "lat": 30.900965,
+    "lng": 75.857275,
+    "description": "Heavy rain expected. Stay indoors."
+  },
+  {
+    "id": 2,
+    "title": "Heat Wave",
+    "location": "Ahmedabad, Gujarat",
+    "lat": 23.0225,
+    "lng": 72.5714,
+    "description": "Temperatures expected to cross 45°C."
+  }
+]

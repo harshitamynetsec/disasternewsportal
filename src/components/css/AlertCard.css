@@ -1,0 +1,83 @@
+/* Alert Card Container */
+.alert-card {
+  background-color: #1c355c;
+  border: 1px solid #2e4a7d;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.alert-card:hover {
+  transform: scale(1.01);
+}
+
+/* Header: Badge + Time */
+.alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* Badge Styling */
+.alert-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+}
+
+.badge-traffic {
+  background-color: #e74c3c;
+}
+
+.badge-weather {
+  background-color: #f39c12;
+}
+
+.badge-emergency {
+  background-color: #e84393;
+}
+
+.alert-time {
+  font-size: 0.85rem;
+  color: #d3d3d3;
+}
+
+/* Title */
+.alert-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: white;
+}
+
+/* Description */
+.alert-description {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  color: #e0e0e0;
+}
+
+/* Location with icon */
+.alert-location {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.alert-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0; /* Adds vertical spacing between cards */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
