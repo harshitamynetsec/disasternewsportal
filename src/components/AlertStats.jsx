@@ -1,57 +1,11 @@
-// import React from "react";
-// import "./css/AlertStats.css"; // Assuming you have a CSS file for styling
-
-// const AlertStats = ({ alerts }) => {
-//   const total = alerts.length;
-//   const byType = alerts.reduce((acc, alert) => {
-//     const type = alert.type || "Unknown";
-//     acc[type] = (acc[type] || 0) + 1;
-//     return acc;
-//   }, {});
-
-//   const bySeverity = alerts.reduce((acc, alert) => {
-//     const severity = alert.severity || "Unknown";
-//     acc[severity] = (acc[severity] || 0) + 1;
-//     return acc;
-//   }, {});
-
-//   return (
-//     <div className="alert-stats-container">
-//       <h2>📊 Alert Summary</h2>
-//       <div className="alert-stats-cards">
-//         <div className="stat-card total">
-//           <h3>Total Alerts</h3>
-//           <p>{total}</p>
-//         </div>
-
-//         {Object.entries(byType).map(([type, count]) => (
-//           <div className="stat-card type" key={type}>
-//             <h3>{type} Alerts</h3>
-//             <p>{count}</p>
-//           </div>
-//         ))}
-
-//         {Object.entries(bySeverity).map(([severity, count]) => (
-//           <div className="stat-card severity" key={severity}>
-//             <h3>{severity} Severity</h3>
-//             <p>{count}</p>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AlertStats;
 
 
 
-
-
-import React from "react";
+import React, { useState } from "react";
 import "./css/AlertStats.css";
 
 const AlertStats = ({ alerts }) => {
+  const [isMinimized, setIsMinimized] = useState(false);
   const total = alerts.length;
 
   // Function to get alert timestamp
@@ -91,11 +45,8 @@ const AlertStats = ({ alerts }) => {
     return alertTime > twentyFourHoursAgo;
   }).length;
 
-  // Placeholder for critical alerts - will be implemented with NLP in future
-  // For now, using basic keyword detection as placeholder
+  // Get critical alerts count
   const getCriticalAlertsCount = () => {
-    // TODO: Replace with NLP-based severity analysis
-    // This is a temporary implementation using basic keywords
     const criticalKeywords = [
       'major', 'severe', 'critical', 'emergency', 'disaster',
       'catastrophic', 'devastating', 'massive', 'intense',
@@ -111,38 +62,53 @@ const AlertStats = ({ alerts }) => {
 
   const criticalAlerts = getCriticalAlertsCount();
 
+  const toggleMinimize = () => {
+    setIsMinimized(!isMinimized);
+  };
+
   return (
-    <div className="alert-stats-container">
-      <h2>📊 Alert Summary</h2>
-      <div className="alert-stats-cards">
-        <div className="stat-card total">
+    <div className={`floating-stats-overlay ${isMinimized ? 'minimized' : ''}`}>
+      <div className="stats-header">
+        <h3>📊 Live Stats</h3>
+        <button 
+          className="minimize-btn" 
+          onClick={toggleMinimize}
+          aria-label={isMinimized ? "Expand stats" : "Minimize stats"}
+        >
+          {isMinimized ? '📈' : '📉'}
+        </button>
+      </div>
+      
+      <div className="floating-stats-cards">
+        <div className="floating-stat-card total">
           <div className="stat-icon">🌍</div>
-          <h3>Total Alerts</h3>
-          <p>{total}</p>
-          <span className="stat-label">Worldwide</span>
+          <div className="stat-content">
+            <div className="stat-number">{total}</div>
+            <div className="stat-label">Total Alerts</div>
+          </div>
         </div>
-
-        <div className="stat-card today">
+        
+        <div className="floating-stat-card today">
           <div className="stat-icon">📅</div>
-          <h3>Today's Alerts</h3>
-          <p>{todaysAlerts}</p>
-          <span className="stat-label">Last 24 Hours</span>
+          <div className="stat-content">
+            <div className="stat-number">{todaysAlerts}</div>
+            <div className="stat-label">Today</div>
+          </div>
         </div>
-
-        <div className="stat-card critical">
+        
+        <div className="floating-stat-card critical">
           <div className="stat-icon">🚨</div>
-          <h3>Critical Alerts</h3>
-          <p>{criticalAlerts}</p>
-          <span className="stat-label">
-            {process.env.NODE_ENV === 'development' ? 'NLP Analysis (Beta)' : 'High Priority'}
-          </span>
+          <div className="stat-content">
+            <div className="stat-number">{criticalAlerts}</div>
+            <div className="stat-label">Critical</div>
+          </div>
         </div>
       </div>
       
-      {/* Development note - remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="dev-note">
-          <small>💡 For critical alerts currently use keyword detection. NLP implementation coming soon.</small>
+      {/* Pulse indicator for new alerts */}
+      {todaysAlerts > 0 && (
+        <div className="pulse-indicator">
+          <div className="pulse-dot"></div>
         </div>
       )}
     </div>
