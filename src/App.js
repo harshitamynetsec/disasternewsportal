@@ -1,5 +1,3 @@
-
-
 // // src/App.js
 // import React, { useState, useEffect, useRef } from "react";
 // import MapView from "./components/MapView";
@@ -220,10 +218,8 @@ function App() {
   const [geocodedAlerts, setGeocodedAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState(0);
-  const alertsPerPage = 10;
 
   const geocodingServiceRef = useRef(null);
 
@@ -276,7 +272,7 @@ function App() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch("https://disaster-api-dohm.onrender.com/disaster-news");
+        const response = await fetch("http://127.0.0.1:8000/disaster-news");
         const data = await response.json();
 
         console.log("Raw data received:", data.slice(0, 2)); // Debug: check first 2 items
@@ -391,40 +387,30 @@ function App() {
     fetchData();
   }, []);
 
-  const totalPages = Math.ceil(filteredAlerts.length / alertsPerPage);
-  const startIdx = (currentPage - 1) * alertsPerPage;
-  const currentAlerts = filteredAlerts.slice(startIdx, startIdx + alertsPerPage);
-
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  // const handlePageChange = (page) => {
+  //   setCurrentPage(page);
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // };
 
   const handleFilter = (data) => {
     // Sort filtered data to maintain chronological order
     const sortedFilteredData = sortAlertsByDate(data);
     setFilteredAlerts(sortedFilteredData);
-    setCurrentPage(1);
+    // setCurrentPage(1);
   };
 
   // Separate alerts with coordinates (both provided and geocoded)
-  const currentAlertsWithCoordinates = currentAlerts.filter(alert => {
-    const hasCoords = alert.coordinates && 
-                     alert.coordinates.lat !== undefined && 
-                     alert.coordinates.lng !== undefined &&
-                     !isNaN(alert.coordinates.lat) && 
-                     !isNaN(alert.coordinates.lng);
-    
-    if (hasCoords) {
-      console.log(`Alert "${alert.title}" has coordinates:`, alert.coordinates);
-    }
-    
-    return hasCoords;
+  const alertsWithCoordinates = filteredAlerts.filter(alert => {
+    return alert.coordinates && 
+           alert.coordinates.lat !== undefined && 
+           alert.coordinates.lng !== undefined &&
+           !isNaN(alert.coordinates.lat) && 
+           !isNaN(alert.coordinates.lng);
   });
   
-  console.log(`Current page: ${currentAlertsWithCoordinates.length} alerts with coordinates out of ${currentAlerts.length} total`);
+  console.log(`Current page: ${alertsWithCoordinates.length} alerts with coordinates out of ${filteredAlerts.length} total`);
   
   const totalAlertsWithCoordinates = filteredAlerts.filter(alert => 
     alert.coordinates && 
@@ -435,18 +421,11 @@ function App() {
   ).length;
 
   // Enhanced statistics including coordinate sources
-  const coordinateStats = currentAlertsWithCoordinates.reduce((acc, alert) => {
+  const coordinateStats = alertsWithCoordinates.reduce((acc, alert) => {
     const source = alert.coordinates.source || 'unknown';
     acc[source] = (acc[source] || 0) + 1;
     return acc;
   }, {});
-
-  const currentPageStats = {
-    total: currentAlerts.length,
-    withCoordinates: currentAlertsWithCoordinates.length,
-    coordinateStats: coordinateStats,
-    countries: [...new Set(currentAlertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))]
-  };
 
   return (
     <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
@@ -494,11 +473,10 @@ function App() {
 
       {/* Map */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <MapView alerts={currentAlertsWithCoordinates} />
+        <MapView alerts={alertsWithCoordinates} />
         <div className="map-footer">
-          <div>📍 <strong>Page {currentPage}</strong>: {currentPageStats.withCoordinates}/{currentPageStats.total} mapped</div>
-          <div>🌏 Countries: {currentPageStats.countries.join(', ')}</div>
-          <div>📊 Total Mapped: {totalAlertsWithCoordinates}/{filteredAlerts.length}</div>
+          <div>📍 Mapped: {alertsWithCoordinates.length}/{filteredAlerts.length}</div>
+          <div>🌏 Countries: {[...new Set(alertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))].join(', ')}</div>
           {Object.keys(coordinateStats).length > 0 && (
             <div style={{ fontSize: "0.85em", opacity: 0.8 }}>
               📌 Sources: {Object.entries(coordinateStats).map(([source, count]) => 
@@ -511,7 +489,7 @@ function App() {
 
       {/* Alert Cards */}
       <div className="alert-cards">
-        {currentAlerts.map((alert, index) => (
+        {filteredAlerts.map((alert, index) => (
           <AlertCard 
             key={`${alert.title}-${alert.timestamp}-${index}`} 
             alert={alert}
@@ -519,21 +497,7 @@ function App() {
         ))}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="pagination">
-          <button onClick={() => handlePageChange(1)} disabled={currentPage === 1}>⏮ First</button>
-          <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>⬅ Prev</button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <select value={currentPage} onChange={(e) => handlePageChange(Number(e.target.value))}>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <option key={i + 1} value={i + 1}>Go to Page {i + 1}</option>
-            ))}
-          </select>
-          <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next ➡</button>
-          <button onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages}>Last ⏭</button>
-        </div>
-      )}
+
 
       <AlertStats alerts={filteredAlerts} />
 
@@ -544,8 +508,7 @@ function App() {
           <p>Total: {alerts.length}</p>
           <p>Geocoded: {geocodedAlerts.length}</p>
           <p>Filtered: {filteredAlerts.length}</p>
-          <p>Current Page: {currentAlerts.length}</p>
-          <p>With Coordinates: {currentAlertsWithCoordinates.length}</p>
+          <p>With Coordinates: {alertsWithCoordinates.length}</p>
           <p>Coordinate Sources: {JSON.stringify(coordinateStats)}</p>
           <p>Cache: {JSON.stringify(geocodingServiceRef.current?.getCacheStats())}</p>
         </div>

@@ -247,7 +247,7 @@ L.Icon.Default.mergeOptions({
 
 const createCustomIcon = (disasterType) => {
   const colors = {
-    earthquake: '#ff4444',
+    earthquake: '#008000',
     flood: '#4444ff',
     fire: '#ff8800',
     storm: '#8800ff',
@@ -272,6 +272,7 @@ const createCustomIcon = (disasterType) => {
     iconAnchor: [10, 10]
   });
 };
+
 
 const MapView = ({ alerts }) => {
   const validAlerts = alerts.filter(alert =>
@@ -308,6 +309,7 @@ const MapView = ({ alerts }) => {
 
   return (
     <div style={{ position: 'relative' }}>
+      {/* Existing counter */}
       <div style={{
         position: 'absolute',
         top: '10px',
@@ -341,7 +343,7 @@ const MapView = ({ alerts }) => {
                 <Popup maxWidth={300}>
                   <div style={{ maxWidth: '280px' }}>
                     <div style={{
-                      backgroundColor: disasterType === 'earthquake' ? '#ff4444' :
+                      backgroundColor: disasterType === 'earthquake' ? '#008000' :
                         disasterType === 'flood' ? '#4444ff' :
                           disasterType === 'fire' ? '#ff8800' : '#ff6b6b',
                       color: 'white',
