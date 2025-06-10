@@ -3,7 +3,7 @@
 .map-container {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 700px; /* Increased from 500px to 700px */
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -22,7 +22,6 @@
   border: none !important;
   animation: markerAppear 0.5s ease-out;
 }
-
 
 .marker-container {
   position: relative;
@@ -85,7 +84,7 @@
 } */
 
 .legend-items {
-  max-height: 300px;
+  max-height: 350px; /* Increased from 300px to accommodate larger map */
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
@@ -265,7 +264,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .map-container {
-    height: 400px;
+    height: 500px; /* Increased from 400px to 500px for tablets */
   }
   
   .map-legend {
@@ -285,7 +284,7 @@
   }
   
   .legend-items {
-    max-height: 200px;
+    max-height: 250px; /* Increased for better visibility on tablets */
   }
   
   .severity-items {
@@ -295,7 +294,7 @@
 
 @media (max-width: 480px) {
   .map-container {
-    height: 350px;
+    height: 400px; /* Increased from 350px to 400px for mobile */
   }
   
   .legend-item {
@@ -314,6 +313,17 @@
   
   .legend-count {
     font-size: 10px;
+  }
+}
+
+/* For extra large screens - optional enhancement */
+@media (min-width: 1200px) {
+  .map-container {
+    height: 800px; /* Even larger for big screens */
+  }
+  
+  .legend-items {
+    max-height: 400px;
   }
 }
 
