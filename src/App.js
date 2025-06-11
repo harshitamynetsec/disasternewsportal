@@ -77,7 +77,7 @@ function App() {
       />
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", height: "3rem" }}>
         <h1 style={{ fontSize: "1.5rem", margin: 0 }}>🌐 NSS Alert Portal</h1>
         
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>

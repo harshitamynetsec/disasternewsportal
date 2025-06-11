@@ -1,5 +1,4 @@
 
-// NotificationIcon.jsx
 import React, { useState } from 'react';
 import './css/NotificationIcon.css'; // We'll create this CSS file
 
