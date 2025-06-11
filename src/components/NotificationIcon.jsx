@@ -1,4 +1,7 @@
+
+// NotificationIcon.jsx
 import React, { useState } from 'react';
+import './css/NotificationIcon.css'; // We'll create this CSS file
 
 const NotificationIcon = ({ notificationHistory, unreadCount, onMarkAllAsRead }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -46,56 +49,16 @@ const NotificationIcon = ({ notificationHistory, unreadCount, onMarkAllAsRead })
   };
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="notification-icon-container">
       {/* Notification Bell Icon */}
       <button
         onClick={toggleDropdown}
-        style={{
-          position: 'relative',
-          background: 'rgba(255, 255, 255, 0.1)',
-          border: '2px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '50%',
-          width: '50px',
-          height: '50px',
-          color: 'white',
-          fontSize: '20px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all 0.3s ease',
-          backdropFilter: 'blur(10px)'
-        }}
-        onMouseOver={(e) => {
-          e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-          e.target.style.transform = 'scale(1.05)';
-        }}
-        onMouseOut={(e) => {
-          e.target.style.background = 'rgba(255, 255, 255, 0.1)';
-          e.target.style.transform = 'scale(1)';
-        }}
+        className={`notification-bell ${unreadCount > 0 ? 'has-notifications' : ''}`}
       >
         🔔
         {/* Notification Count Badge */}
         {unreadCount > 0 && (
-          <span
-            style={{
-              position: 'absolute',
-              top: '-5px',
-              right: '-5px',
-              background: '#ff4444',
-              color: 'white',
-              borderRadius: '50%',
-              width: '20px',
-              height: '20px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              animation: unreadCount > 0 ? 'pulse 2s infinite' : 'none'
-            }}
-          >
+          <span className="notification-badge">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -103,141 +66,49 @@ const NotificationIcon = ({ notificationHistory, unreadCount, onMarkAllAsRead })
 
       {/* Dropdown Menu */}
       {isDropdownOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '60px',
-            right: '0',
-            width: '400px',
-            maxHeight: '500px',
-            backgroundColor: '#1a4480',
-            border: '2px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '12px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            zIndex: 1001,
-            backdropFilter: 'blur(10px)',
-            overflow: 'hidden'
-          }}
-        >
+        <div className="notification-dropdown">
           {/* Header */}
-          <div
-            style={{
-              padding: '16px',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <h3 style={{ margin: 0, color: 'white', fontSize: '16px' }}>
-              Recent Notifications
-            </h3>
+          <div className="notification-header">
+            <h3>Recent Notifications</h3>
             <button
               onClick={() => setIsDropdownOpen(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'white',
-                fontSize: '18px',
-                cursor: 'pointer',
-                padding: '4px',
-                borderRadius: '4px',
-                opacity: 0.7
-              }}
-              onMouseOver={(e) => e.target.style.opacity = '1'}
-              onMouseOut={(e) => e.target.style.opacity = '0.7'}
+              className="close-button"
             >
               ×
             </button>
           </div>
 
           {/* Notification List */}
-          <div
-            style={{
-              maxHeight: '400px',
-              overflowY: 'auto',
-              padding: '8px'
-            }}
-          >
+          <div className="notification-list">
             {notificationHistory.length === 0 ? (
-              <div
-                style={{
-                  padding: '20px',
-                  textAlign: 'center',
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  fontSize: '14px'
-                }}
-              >
+              <div className="no-notifications">
                 No notifications yet
               </div>
             ) : (
-              notificationHistory.map((notification, index) => (
+              notificationHistory.map((notification) => (
                 <div
                   key={notification.id}
-                  style={{
-                    padding: '12px',
-                    margin: '4px 0',
-                    backgroundColor: notification.isRead 
-                      ? 'rgba(255, 255, 255, 0.05)' 
-                      : 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
-                    borderLeft: `4px solid ${getNotificationColor(notification.severity)}`,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = notification.isRead 
-                      ? 'rgba(255, 255, 255, 0.05)' 
-                      : 'rgba(255, 255, 255, 0.1)';
-                  }}
+                  className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
+                  style={{ borderLeftColor: getNotificationColor(notification.severity) }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '8px'
-                    }}
-                  >
-                    <span style={{ fontSize: '16px', marginTop: '2px' }}>
+                  <div className="notification-content">
+                    <span className="notification-icon">
                       {getNotificationIcon(notification.severity)}
                     </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontWeight: 'bold',
-                          fontSize: '13px',
-                          color: 'white',
-                          marginBottom: '4px',
-                          lineHeight: '1.3'
-                        }}
-                      >
+                    <div className="notification-details">
+                      <div className="notification-title">
                         {notification.title.length > 60 
                           ? notification.title.substring(0, 60) + '...'
                           : notification.title
                         }
                       </div>
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          marginBottom: '6px'
-                        }}
-                      >
+                      <div className="notification-meta">
                         {notification.location && `📍 ${notification.location}`}
                         {notification.location && ' • '}
                         {formatTimeAgo(notification.receivedAt)}
                       </div>
                       {notification.description && (
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            lineHeight: '1.3'
-                          }}
-                        >
+                        <div className="notification-description">
                           {notification.description.length > 80 
                             ? notification.description.substring(0, 80) + '...'
                             : notification.description
@@ -253,36 +124,14 @@ const NotificationIcon = ({ notificationHistory, unreadCount, onMarkAllAsRead })
 
           {/* Footer */}
           {notificationHistory.length > 0 && (
-            <div
-              style={{
-                padding: '12px 16px',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-                textAlign: 'center'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '12px',
-                  color: 'rgba(255, 255, 255, 0.6)'
-                }}
-              >
+            <div className="notification-footer">
+              <span>
                 {notificationHistory.length} total notification{notificationHistory.length !== 1 ? 's' : ''}
               </span>
             </div>
           )}
         </div>
       )}
-
-      {/* CSS Animation for pulse effect */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.1); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-        `
-      }} />
     </div>
   );
 };
