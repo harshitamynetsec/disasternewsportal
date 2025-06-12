@@ -1,9 +1,9 @@
 /* NotificationIcon.css */
 .notification-icon-container {
-    bottom: 420px;
-  right: 90px;
-  z-index: 1000;
   position: fixed;
+  top: 20px;
+  right: 80px;
+  z-index: 1000;
   display: inline-block;
 }
 

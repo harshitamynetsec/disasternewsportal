@@ -101,17 +101,17 @@ function App() {
       />
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", height: "3rem" }}>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: "1rem", 
+        height: "3rem",
+        padding: "0 1rem"
+      }}>
         <h1 style={{ fontSize: "1.5rem", margin: 0 }}>🌐 NSS Alert Portal</h1>
         
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          {/* Notification Icon */}
-          <NotificationIcon 
-            notificationHistory={notificationHistory}
-            unreadCount={unreadCount}
-            onMarkAllAsRead={markAllAsRead}
-          />
-          
           <button onClick={toggleMenu} className="hamburger-btn">☰</button>
         </div>
         
@@ -119,6 +119,13 @@ function App() {
           <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
         </div>
       </div>
+
+      {/* Notification Icon */}
+      <NotificationIcon 
+        notificationHistory={notificationHistory}
+        unreadCount={unreadCount}
+        onMarkAllAsRead={markAllAsRead}
+      />
 
       {/* Loading Indicator */}
       <LoadingIndicator isGeocoding={isGeocoding} geocodingProgress={geocodingProgress} />
