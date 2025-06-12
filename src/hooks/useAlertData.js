@@ -89,7 +89,7 @@ const useAlertData = (showNotification) => {
   const fetchAlertData = async () => {
     try {
       console.log('Fetching alert data...');
-      const response = await fetch("https://disaster-api-dohm.onrender.com/disaster-news");
+      const response = await fetch("http://localhost:8000/disaster-news");
       const data = await response.json();
 
       console.log("Raw data received:", data.length, "alerts");

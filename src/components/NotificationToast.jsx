@@ -108,7 +108,7 @@ const NotificationToast = ({ notification, onClose }) => {
       </div>
 
       {/* Content */}
-      <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+      <div style={{ fontSize: '13px', lineHeight: '1.4' ,zIndex: 1000 }}>
         <div style={{ 
           fontWeight: 'bold', 
           marginBottom: '6px',

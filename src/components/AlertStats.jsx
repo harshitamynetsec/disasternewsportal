@@ -60,7 +60,9 @@ const AlertStats = ({ alerts }) => {
     }).length;
   };
 
-  const criticalAlerts = getCriticalAlertsCount();
+  // const criticalAlerts = getCriticalAlertsCount();
+  const criticalAlerts = "0";
+// 
 
   const toggleMinimize = () => {
     setIsMinimized(!isMinimized);
