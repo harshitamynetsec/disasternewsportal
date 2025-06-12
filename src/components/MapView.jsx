@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -314,7 +311,7 @@ const MapView = ({ alerts }) => {
   const zoomLevel = getZoomLevel();
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="map-section" style={{ position: 'relative' }}>
       <AnimationStyles />
       
       {/* Enhanced counter with animation toggle */}
