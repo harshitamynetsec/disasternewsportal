@@ -1,0 +1,65 @@
+.marker-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-effect {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 🔥 Fire: pulsing red/orange */
+.fire-marker .marker-effect {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,136,0,0.6) 20%, transparent 70%);
+  animation: pulseFire 1.5s infinite ease-in-out;
+}
+
+/* ⚡ Storm: rapid blink */
+.storm-marker .marker-effect {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(136,0,255,0.5);
+  animation: blinkStorm 0.6s infinite;
+}
+
+/* 🌀 Cyclone: slow spin ring */
+.cyclone-marker .marker-effect {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(0,255,136,0.6);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spinCyclone 1.5s linear infinite;
+}
+
+/* 🌊 Flood: bobbing up/down */
+.flood-marker .marker-wrapper {
+  animation: bobFlood 2s ease-in-out infinite;
+}
+
+@keyframes pulseFire {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.5); opacity: 0.2; }
+}
+
+@keyframes blinkStorm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes spinCyclone {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bobFlood {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
