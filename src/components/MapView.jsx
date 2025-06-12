@@ -333,9 +333,7 @@ const MapView = ({ alerts }) => {
         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
       }}>
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
-        <div style={{ fontSize: '0.7rem', marginTop: '0.3rem', opacity: 0.8 }}>
-          ✨ Animated disaster markers active
-        </div>
+        
       </div>
 
       <MapContainer 

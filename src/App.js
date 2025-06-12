@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MapView from "./components/MapView";
 import AlertCard from "./components/AlertCard";
 import SideMenu from "./components/SideMenu";
@@ -15,6 +14,7 @@ import "./App.css";
 function App() {
   const [filteredAlerts, setFilteredAlerts] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   // Custom hooks for clean separation of concerns
   const { 
@@ -68,6 +68,30 @@ function App() {
 
   console.log(`Current page: ${alertsWithCoordinates.length} alerts with coordinates out of ${filteredAlerts.length} total`);
 
+  const scrollToAlerts = () => {
+    const alertsSection = document.querySelector('.alerts-section');
+    if (alertsSection) {
+      const yOffset = -80; // Offset to account for header and spacing
+      const y = alertsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollToMap = () => {
+    const mapSection = document.querySelector('.map-section');
+    if (mapSection) {
+      const yOffset = -80; // Offset for sticky header
+      const y = mapSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
       {/* Sequential Notification System */}
@@ -103,10 +127,24 @@ function App() {
       <SideMenu isOpen={isMenuOpen} onClose={toggleMenu}>
         <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
       </SideMenu>
-
+    
       {/* Map */}
       <div style={{ marginBottom: "1.5rem" }}>
         <MapView alerts={alertsWithCoordinates} />
+        <div 
+          className="scroll-indicator"
+          onClick={scrollToAlerts}
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              scrollToAlerts();
+            }
+          }}
+        >
+          Scroll down for news
+          <span className="scroll-arrow" aria-hidden="true">↓</span>
+        </div>
         <div className="map-footer">
           <div>📍 Mapped: {alertsWithCoordinates.length}/{filteredAlerts.length}</div>
           <div>🌏 Countries: {[...new Set(alertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))].join(', ')}</div>
@@ -124,6 +162,7 @@ function App() {
           )}
         </div>
       </div>
+      
 
       {/* Alert Cards */}
       <div className="alert-cards">
@@ -137,6 +176,10 @@ function App() {
 
       {/* Alert Statistics */}
       <AlertStats alerts={filteredAlerts} />
+
+       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0 16px 0' }}>
+        <button onClick={scrollToMap} className="jump-to-map-btn">Jump to Map</button>
+      </div>
 
       {/* Debug Panel (Development only) */}
       {process.env.NODE_ENV === 'development' && (
@@ -153,6 +196,10 @@ function App() {
           <p>Last Fetch: {lastFetchTime?.toLocaleString()}</p>
         </div>
       )}
+
+      
+
+     
     </div>
   );
 }
