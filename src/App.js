@@ -15,6 +15,7 @@ function App() {
   const [filteredAlerts, setFilteredAlerts] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Custom hooks for clean separation of concerns
   const { 
@@ -35,6 +36,12 @@ function App() {
     sortAlertsByDate,
     lastFetchTime
   } = useAlertData(showNotification);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Initialize filtered alerts when geocoded alerts are ready
   React.useEffect(() => {
@@ -101,7 +108,7 @@ function App() {
       />
 
       {/* Header */}
-      <div style={{ 
+      <div className="app-header" style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
@@ -110,22 +117,28 @@ function App() {
         padding: "0 1rem"
       }}>
         <h1 style={{ fontSize: "1.5rem", margin: 0 }}>🌐 NSS Alert Portal</h1>
-        
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <button onClick={toggleMenu} className="hamburger-btn">☰</button>
+          {isMobile && (
+            <NotificationIcon 
+              notificationHistory={notificationHistory}
+              unreadCount={unreadCount}
+              onMarkAllAsRead={markAllAsRead}
+            />
+          )}
         </div>
-        
         <div className="desktop-filter">
           <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
         </div>
       </div>
-
-      {/* Notification Icon */}
-      <NotificationIcon 
-        notificationHistory={notificationHistory}
-        unreadCount={unreadCount}
-        onMarkAllAsRead={markAllAsRead}
-      />
+      {/* Notification Icon for desktop (fixed position) */}
+      {!isMobile && (
+        <NotificationIcon 
+          notificationHistory={notificationHistory}
+          unreadCount={unreadCount}
+          onMarkAllAsRead={markAllAsRead}
+        />
+      )}
 
       {/* Loading Indicator */}
       <LoadingIndicator isGeocoding={isGeocoding} geocodingProgress={geocodingProgress} />

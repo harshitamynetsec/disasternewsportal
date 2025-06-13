@@ -1,73 +1,3 @@
-// import React, { useState } from "react";
-// import "./css/AlertFilter.css"; // Assuming you have a CSS file for styling
-
-// const AlertFilter = ({ alerts, onFilter }) => {
-//   const [search, setSearch] = useState("");
-//   const [severity, setSeverity] = useState("All");
-//   const [type, setType] = useState("All");
-
-//   const handleFilter = () => {
-//     let filtered = alerts;
-
-//     if (search) {
-//       filtered = filtered.filter(alert =>
-//         alert.title.toLowerCase().includes(search.toLowerCase()) ||
-//         alert.description.toLowerCase().includes(search.toLowerCase()) ||
-//         alert.location.toLowerCase().includes(search.toLowerCase())
-//       );
-//     }
-
-//     if (severity !== "All") {
-//       filtered = filtered.filter(alert => alert.severity === severity);
-//     }
-
-//     if (type !== "All") {
-//       filtered = filtered.filter(alert => alert.type === type);
-//     }
-
-//     onFilter(filtered);
-//   };
-
-//   return (
-//     <div className="alert-filter">
-//       <input
-//         type="text"
-//         placeholder="Search alerts..."
-//         value={search}
-//         onChange={(e) => setSearch(e.target.value)}
-//       />
-      
-//       <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
-//         <option>All</option>
-//         <option>High</option>
-//         <option>Moderate</option>
-//         <option>Low</option>
-//       </select>
-
-//       <select value={type} onChange={(e) => setType(e.target.value)}>
-//         <option>All</option>
-//         <option>Weather</option>
-//         <option>Emergency</option>
-//         <option>Traffic</option>
-//       </select>
-
-//       <button onClick={handleFilter}>Apply</button>
-//       <button onClick={() => {
-//         setSearch("");
-//         setSeverity("All");
-//         setType("All");
-//         onFilter(alerts); // Reset filter
-//       }}>Reset</button>
-//     </div>
-//   );
-// };
-
-// export default AlertFilter;
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import "./css/AlertFilter.css";
 
@@ -76,6 +6,7 @@ const AlertFilter = ({ alerts, onFilter }) => {
   const [timeFilter, setTimeFilter] = useState("All");
   const [disasterType, setDisasterType] = useState("All");
   const [availableTypes, setAvailableTypes] = useState([]);
+  const [region, setRegion] = useState("All");
 
   // Extract unique disaster types from alerts
   useEffect(() => {
@@ -155,6 +86,27 @@ const AlertFilter = ({ alerts, onFilter }) => {
     }
   };
 
+  // Helper: Map country/location to region
+  const getRegion = (alert) => {
+    const location = (alert.location || alert.country || alert.title || "").toLowerCase();
+    // APJ: Asia Pacific and Japan
+    const apjKeywords = [
+      "asia", "japan", "china", "india", "indonesia", "malaysia", "singapore", "thailand", "vietnam", "philippines", "korea", "australia", "new zealand", "pakistan", "bangladesh", "sri lanka", "nepal", "myanmar", "taiwan", "hong kong", "mongolia", "cambodia", "laos", "brunei", "fiji", "papua", "solomon", "micronesia", "palau", "timor", "maldives", "bhutan"
+    ];
+    // AMS: Americas
+    const amsKeywords = [
+      "america", "usa", "united states", "canada", "mexico", "brazil", "argentina", "chile", "colombia", "peru", "venezuela", "ecuador", "bolivia", "paraguay", "uruguay", "guyana", "suriname", "panama", "cuba", "jamaica", "haiti", "dominican", "puerto rico", "trinidad", "barbados", "bahamas", "belize", "guatemala", "honduras", "el salvador", "nicaragua", "costa rica"
+    ];
+    // EMEA: Europe, Middle East, Africa
+    const emeaKeywords = [
+      "europe", "france", "germany", "uk", "united kingdom", "italy", "spain", "portugal", "netherlands", "belgium", "sweden", "norway", "finland", "denmark", "switzerland", "austria", "poland", "czech", "slovakia", "hungary", "romania", "bulgaria", "greece", "russia", "ukraine", "turkey", "israel", "saudi", "uae", "emirates", "iran", "iraq", "egypt", "south africa", "nigeria", "kenya", "morocco", "algeria", "tunisia", "libya", "sudan", "ethiopia", "ghana", "tanzania", "angola", "zambia", "zimbabwe", "cameroon", "ivory coast", "senegal", "mozambique", "madagascar", "congo", "somalia", "chad", "niger", "mali", "rwanda", "burundi", "benin", "botswana", "gabon", "lesotho", "malawi", "mauritania", "namibia", "sierra leone", "togo", "uganda"
+    ];
+    if (apjKeywords.some(k => location.includes(k))) return "APJ";
+    if (amsKeywords.some(k => location.includes(k))) return "AMS";
+    if (emeaKeywords.some(k => location.includes(k))) return "EMEA";
+    return "Other";
+  };
+
   const handleFilter = () => {
     let filtered = alerts;
     const now = new Date().getTime();
@@ -197,6 +149,11 @@ const AlertFilter = ({ alerts, onFilter }) => {
       });
     }
 
+    // Region filter
+    if (region !== "All") {
+      filtered = filtered.filter(alert => getRegion(alert) === region);
+    }
+
     onFilter(filtered);
   };
 
@@ -204,6 +161,7 @@ const AlertFilter = ({ alerts, onFilter }) => {
     setSearch("");
     setTimeFilter("All");
     setDisasterType("All");
+    setRegion("All");
     onFilter(alerts);
   };
 
@@ -230,6 +188,14 @@ const AlertFilter = ({ alerts, onFilter }) => {
             {type.charAt(0) + type.slice(1).toLowerCase()}
           </option>
         ))}
+      </select>
+
+      {/* Region filter dropdown */}
+      <select value={region} onChange={e => setRegion(e.target.value)}>
+        <option value="All">All Regions</option>
+        <option value="APJ">APJ (Asia Pacific & Japan)</option>
+        <option value="AMS">AMS (Americas)</option>
+        <option value="EMEA">EMEA (Europe, Middle East, Africa)</option>
       </select>
 
       <button onClick={handleFilter}>Apply</button>

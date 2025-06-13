@@ -291,3 +291,65 @@ button:disabled {
   color: #fff;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  height: 3rem;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.app-header .hamburger-btn {
+  z-index: 2;
+}
+
+.app-header .notification-icon-container {
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: 2;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.5rem 0.5rem 0 0.5rem;
+  }
+  .app-header .hamburger-btn {
+    font-size: 2rem;
+    margin-right: 0.5rem;
+  }
+  .app-header .notification-icon-container {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-left: 0.5rem;
+    display: inline-block;
+  }
+  .notification-bell {
+    position: relative !important;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+}
+
+@media (min-width: 769px) {
+  .notification-icon-container {
+    position: fixed;
+    top: 20px;
+    right: 80px;
+    z-index: 1000;
+  }
+  .notification-bell {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+}
