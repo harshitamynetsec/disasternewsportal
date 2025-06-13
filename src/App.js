@@ -116,7 +116,7 @@ function App() {
         height: "3rem",
         padding: "0 1rem"
       }}>
-        <h1 style={{ fontSize: "1.5rem", margin: 0 }}>🌐 NSS Alert Portal</h1>
+        <h1 className="app-title">🌐 NSS Alert Portal</h1>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <button onClick={toggleMenu} className="hamburger-btn">☰</button>
           {isMobile && (

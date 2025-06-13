@@ -353,3 +353,144 @@ button:disabled {
     font-size: 20px;
   }
 }
+
+.app-title {
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  margin: 0;
+  position: relative;
+  /* Flowing gradient: various shades of light blue and cyan */
+  background: linear-gradient(120deg,
+    #b6eaff 0%,
+    #7fd8ff 20%,
+    #4fc3f7 40%,
+    #00eaff 60%,
+    #4fc3f7 80%,
+    #b6eaff 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Subtle, soft shadow for depth only */
+  text-shadow:
+    0 1px 2px rgba(0,0,0,0.10),
+    0 2px 8px rgba(127,216,255,0.10);
+  animation:
+    gradientFlow 5s ease-in-out infinite,
+    fadeInScale 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0);
+  will-change: transform, background-position;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: default;
+}
+
+.app-title:hover {
+  transform: translateY(-2px) scale(1.02);
+  text-shadow:
+    0 2px 6px rgba(0,0,0,0.13),
+    0 4px 12px rgba(127,216,255,0.13);
+}
+
+.app-title::before {
+  /* Keep the glass effect but reduce opacity */
+  opacity: 0.08;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Entrance animation */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  60% {
+    opacity: 0.8;
+    transform: scale(1.05) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-title {
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    letter-spacing: -0.01em;
+  }
+  
+  .app-title::before {
+    left: -10px;
+    right: -10px;
+    top: -5px;
+    bottom: -5px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .app-title {
+    background: linear-gradient(135deg, 
+      #a8edea 0%, 
+      #fed6e3 25%, 
+      #d299c2 50%, 
+      #fef9d7 75%, 
+      #85ffbd 100%);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .app-title::before {
+    background: linear-gradient(135deg, 
+      rgba(255,255,255,0.05) 0%, 
+      rgba(255,255,255,0.02) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+}
+
+/* Alternative modern styles for different sections */
+.app-title.variant-minimal {
+  background: linear-gradient(90deg, #1a1a1a 0%, #4a4a4a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.app-title.variant-neon {
+  color: #fff;
+  text-shadow: 
+    0 0 5px rgba(0, 255, 255, 0.8),
+    0 0 10px rgba(0, 255, 255, 0.6),
+    0 0 20px rgba(0, 255, 255, 0.4),
+    0 0 40px rgba(0, 255, 255, 0.2);
+  background: none;
+  -webkit-text-fill-color: initial;
+}
+
+.app-title.variant-glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  -webkit-text-fill-color: initial;
+}
