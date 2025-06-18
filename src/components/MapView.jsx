@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import './css/MapView.css';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -322,6 +323,7 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
         const lat = alert.coordinates.lat;
         const lng = alert.coordinates.lng;
         const disasterType = alert.analysis?.disaster_type || "default";
+        const config = disasterConfig[disasterType?.toLowerCase()] || disasterConfig.default;
         return getWrappedLongitudes(lng).map((wrappedLng, i) => (
           <Marker
             key={`${alert.title}-${alert.timestamp}-${idx}-wrap${i}`}
@@ -329,10 +331,24 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
             icon={createAnimatedIcon(disasterType)}
           >
             <Popup>
-              <div style={{ maxWidth: '300px' }}>
-                <strong>{alert.title}</strong>
-                <br />
-                {alert.description}
+              <div className="custom-popup">
+                <div className="popup-header">
+                  <span className="popup-icon">{config.icon}</span>
+                  <span className="popup-type">{config.name}</span>
+                  <span className="popup-severity">
+                    {alert.severity || 'Medium'}
+                  </span>
+                </div>
+                <div className="popup-content">
+                  <h4>{alert.title}</h4>
+                  <p>{alert.description}</p>
+                  <div className="popup-meta">
+                    <span>🕒 {new Date(alert.timestamp).toLocaleString()}</span>
+                    {alert.location && (
+                      <span>📍 {alert.location}</span>
+                    )}
+                  </div>
+                </div>
               </div>
             </Popup>
           </Marker>
