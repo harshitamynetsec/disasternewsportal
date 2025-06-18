@@ -51,6 +51,11 @@ function App() {
     }
   }, [geocodedAlerts, filteredAlerts.length]);
 
+  // Reset focusedAlert on mount to prevent sticky focus after reload
+  useEffect(() => {
+    setFocusedAlert(null);
+  }, []);
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleFilter = (data) => {
@@ -106,6 +111,7 @@ function App() {
         typeof alert.coordinates.lng === 'number') {
       setFocusedAlert(alert);
       scrollToMap();
+      setTimeout(() => setFocusedAlert(null), 600); // Clear after focusing
     }
   };
 
