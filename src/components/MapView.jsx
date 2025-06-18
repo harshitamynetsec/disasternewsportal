@@ -348,6 +348,25 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
                       <span>📍 {alert.location}</span>
                     )}
                   </div>
+                  {alert.link && (
+                    <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                      <a
+                        href={alert.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#00fff7',
+                          textDecoration: 'underline',
+                          fontWeight: 600,
+                          fontSize: '0.98em',
+                          textShadow: '0 0 6px #00fff7cc',
+                          transition: 'color 0.2s',
+                        }}
+                      >
+                        🔗 More Info
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </Popup>
