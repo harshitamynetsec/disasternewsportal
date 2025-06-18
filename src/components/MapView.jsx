@@ -290,6 +290,58 @@ const MapFocus = ({ position, zoom }) => {
   return null;
 };
 
+// Helper component to render wrapped markers
+const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
+  const map = useMap();
+  const bounds = map.getBounds();
+  const west = bounds.getWest();
+  const east = bounds.getEast();
+
+  // Helper: get all visible longitudes for a marker
+  const getWrappedLongitudes = (lng) => {
+    const markers = [];
+    for (let offset = -2; offset <= 2; offset++) {
+      const wrappedLng = lng + offset * 360;
+      if (wrappedLng >= west - 360 && wrappedLng <= east + 360) {
+        markers.push(wrappedLng);
+      }
+    }
+    return markers;
+  };
+
+  return (
+    <>
+      {alerts.map((alert, idx) => {
+        if (
+          !alert.coordinates ||
+          typeof alert.coordinates.lat !== "number" ||
+          typeof alert.coordinates.lng !== "number"
+        ) {
+          return null;
+        }
+        const lat = alert.coordinates.lat;
+        const lng = alert.coordinates.lng;
+        const disasterType = alert.analysis?.disaster_type || "default";
+        return getWrappedLongitudes(lng).map((wrappedLng, i) => (
+          <Marker
+            key={`${alert.title}-${alert.timestamp}-${idx}-wrap${i}`}
+            position={[lat, wrappedLng]}
+            icon={createAnimatedIcon(disasterType)}
+          >
+            <Popup>
+              <div style={{ maxWidth: '300px' }}>
+                <strong>{alert.title}</strong>
+                <br />
+                {alert.description}
+              </div>
+            </Popup>
+          </Marker>
+        ));
+      })}
+    </>
+  );
+};
+
 const MapView = ({ alerts, focusMarker }) => {
   const mapRef = useRef(null);
   const validAlerts = alerts.filter(alert =>
@@ -351,9 +403,12 @@ const MapView = ({ alerts, focusMarker }) => {
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
       </div>
 
-      <MapContainer 
-        center={mapCenter} 
-        zoom={zoomLevel} 
+      <MapContainer
+        center={mapCenter}
+        zoom={zoomLevel}
+        minZoom={2}
+        maxBounds={[[-85, -Infinity], [85, Infinity]]}
+        maxBoundsViscosity={1.0}
         style={{ height: "580px", width: "100%" }}
         className="disaster-map"
         ref={mapRef}
@@ -369,114 +424,7 @@ const MapView = ({ alerts, focusMarker }) => {
           zoomToBoundsOnClick={true}
           maxClusterRadius={50}
         >
-          {validAlerts.map((alert, index) => {
-            const disasterType = alert.analysis?.disaster_type || 'default';
-            const config = disasterConfig[disasterType.toLowerCase()] || disasterConfig.default;
-            
-            return (
-              <Marker
-                key={`${alert.title}-${alert.timestamp}-${index}`}
-                position={[alert.coordinates.lat, alert.coordinates.lng]}
-                icon={createAnimatedIcon(disasterType)}
-              >
-                <Popup 
-                  maxWidth={320}
-                  className="disaster-popup"
-                >
-                  <div style={{ maxWidth: '300px' }}>
-                    {/* Enhanced disaster type badge */}
-                    <div style={{
-                      background: config.gradient,
-                      color: 'white',
-                      padding: '0.4rem 0.8rem',
-                      borderRadius: '15px',
-                      fontSize: '0.75rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      marginBottom: '0.8rem',
-                      textTransform: 'uppercase',
-                      fontWeight: 'bold',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                    }}>
-                      {config.icon} {config.name}
-                    </div>
-
-                    <h4 style={{ 
-                      margin: '0 0 0.5rem 0', 
-                      fontSize: '1rem',
-                      color: '#2c3e50',
-                      fontWeight: 'bold'
-                    }}>
-                      {alert.title}
-                    </h4>
-
-                    <p style={{ 
-                      fontSize: '0.85rem', 
-                      color: '#7f8c8d',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      margin: '0.5rem 0'
-                    }}>
-                      📍 {alert.location || 'Unknown location'}
-                    </p>
-
-                    {alert.description && (
-                      <p style={{ 
-                        fontSize: '0.85rem',
-                        lineHeight: '1.4',
-                        color: '#34495e',
-                        margin: '0.5rem 0'
-                      }}>
-                        {alert.description.length > 120
-                          ? `${alert.description.substring(0, 120)}...`
-                          : alert.description}
-                      </p>
-                    )}
-
-                    <p style={{ 
-                      fontSize: '0.75rem', 
-                      color: '#95a5a6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      margin: '0.8rem 0 0.5rem 0'
-                    }}>
-                      🕒 {new Date(alert.timestamp).toLocaleString("en-IN", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
-                    </p>
-
-                    {alert.link && (
-                      <a 
-                        href={alert.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ 
-                          color: '#3498db', 
-                          fontSize: '0.85rem', 
-                          textDecoration: 'none',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.3rem',
-                          fontWeight: '500',
-                          padding: '0.3rem 0',
-                          borderBottom: '1px solid transparent',
-                          transition: 'border-color 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.target.style.borderBottomColor = '#3498db'}
-                        onMouseLeave={(e) => e.target.style.borderBottomColor = 'transparent'}
-                      >
-                        🔗 Read full report
-                      </a>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+          <WrappedMarkers alerts={validAlerts} createAnimatedIcon={createAnimatedIcon} />
         </MarkerClusterGroup>
         
         {/* Add MapFocus component */}
