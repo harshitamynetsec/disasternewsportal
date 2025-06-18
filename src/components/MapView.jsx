@@ -1,5 +1,5 @@
-import React from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -277,7 +277,21 @@ const AnimationStyles = () => (
   `}</style>
 );
 
-const MapView = ({ alerts }) => {
+// Add a new component to handle map focus
+const MapFocus = ({ position, zoom }) => {
+  const map = useMap();
+  
+  React.useEffect(() => {
+    if (position && position[0] && position[1]) {
+      map.setView(position, zoom || 12);
+    }
+  }, [position, zoom, map]);
+  
+  return null;
+};
+
+const MapView = ({ alerts, focusMarker }) => {
+  const mapRef = useRef(null);
   const validAlerts = alerts.filter(alert =>
     alert.coordinates &&
     typeof alert.coordinates.lat === "number" &&
@@ -310,6 +324,11 @@ const MapView = ({ alerts }) => {
   const mapCenter = getMapCenter();
   const zoomLevel = getZoomLevel();
 
+  // Get focus position if focusMarker is provided
+  const focusPosition = focusMarker && focusMarker.coordinates ? 
+    [focusMarker.coordinates.lat, focusMarker.coordinates.lng] : 
+    null;
+
   return (
     <div className="map-section" style={{ position: 'relative' }}>
       <AnimationStyles />
@@ -330,7 +349,6 @@ const MapView = ({ alerts }) => {
         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
       }}>
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
-        
       </div>
 
       <MapContainer 
@@ -338,11 +356,10 @@ const MapView = ({ alerts }) => {
         zoom={zoomLevel} 
         style={{ height: "580px", width: "100%" }}
         className="disaster-map"
+        ref={mapRef}
       >
         <TileLayer
-          // url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           url="https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}@2x.png?key=nksRfzxRXRECvvz3HFsg"
-          // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
 
         <MarkerClusterGroup 
@@ -461,6 +478,14 @@ const MapView = ({ alerts }) => {
             );
           })}
         </MarkerClusterGroup>
+        
+        {/* Add MapFocus component */}
+        {focusPosition && (
+          <MapFocus 
+            position={focusPosition}
+            zoom={12}
+          />
+        )}
       </MapContainer>
     </div>
   );

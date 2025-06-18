@@ -1,10 +1,7 @@
-
-
-
 import React, { useState } from "react";
 import "./css/AlertCard.css";
 
-const AlertCard = ({ alert, onFeedback }) => {
+const AlertCard = ({ alert, onFeedback, onCardClick }) => {
   const [feedback, setFeedback] = useState(null); // 'helpful' or 'not-helpful'
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -20,8 +17,9 @@ const AlertCard = ({ alert, onFeedback }) => {
   const alertLocation =
     alert.title.match(/in ([^,]+)/i)?.[1] || "Unknown location";
 
-  const handleFeedback = async (feedbackType) => {
-    if (feedback || isSubmitting) return; // Prevent multiple submissions
+  const handleFeedback = async (feedbackType, e) => {
+    e.stopPropagation(); // Prevent card click when clicking feedback
+    if (feedback || isSubmitting) return;
     
     setIsSubmitting(true);
     
@@ -43,8 +41,35 @@ const AlertCard = ({ alert, onFeedback }) => {
     }
   };
 
+  const handleCardClick = (e) => {
+    // Don't trigger if clicking on feedback buttons or links
+    if (e.target.closest('.feedback-buttons') || e.target.closest('a')) {
+      return;
+    }
+    
+    if (onCardClick && alert.coordinates && 
+        typeof alert.coordinates.lat === 'number' && 
+        typeof alert.coordinates.lng === 'number') {
+      onCardClick(alert);
+    }
+  };
+
+  const handleLinkClick = (e) => {
+    e.stopPropagation(); // Prevent card click when clicking link
+  };
+
   return (
-    <div className="alert-card">
+    <div 
+      className={`alert-card ${alert.coordinates ? 'clickable' : ''}`}
+      onClick={handleCardClick}
+      role={alert.coordinates ? "button" : undefined}
+      tabIndex={alert.coordinates ? 0 : undefined}
+      onKeyPress={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleCardClick(e);
+        }
+      }}
+    >
       <div className="alert-header">
         <span className={`alert-badge badge-${alertType.toLowerCase()}`}>
           {alertType}
@@ -61,7 +86,14 @@ const AlertCard = ({ alert, onFeedback }) => {
 
       <div className="alert-footer">
         <div className="alert-link">
-          🔗 <a href={alert.link} target="_blank" rel="noopener noreferrer">More Info</a>
+          🔗 <a 
+            href={alert.link} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            onClick={handleLinkClick}
+          >
+            More Info
+          </a>
         </div>
         
         <div className="feedback-section">
@@ -69,7 +101,7 @@ const AlertCard = ({ alert, onFeedback }) => {
           <div className="feedback-buttons">
             <button
               className={`feedback-btn helpful ${feedback === 'helpful' ? 'selected' : ''} ${isSubmitting ? 'submitting' : ''}`}
-              onClick={() => handleFeedback('helpful')}
+              onClick={(e) => handleFeedback('helpful', e)}
               disabled={feedback || isSubmitting}
               title="Mark as helpful"
             >
@@ -80,7 +112,7 @@ const AlertCard = ({ alert, onFeedback }) => {
             
             <button
               className={`feedback-btn not-helpful ${feedback === 'not-helpful' ? 'selected' : ''} ${isSubmitting ? 'submitting' : ''}`}
-              onClick={() => handleFeedback('not-helpful')}
+              onClick={(e) => handleFeedback('not-helpful', e)}
               disabled={feedback || isSubmitting}
               title="Mark as not helpful"
             >

@@ -16,6 +16,7 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [focusedAlert, setFocusedAlert] = useState(null);
 
   // Custom hooks for clean separation of concerns
   const { 
@@ -99,6 +100,15 @@ function App() {
     }
   };
 
+  const handleAlertCardClick = (alert) => {
+    if (alert.coordinates && 
+        typeof alert.coordinates.lat === 'number' && 
+        typeof alert.coordinates.lng === 'number') {
+      setFocusedAlert(alert);
+      scrollToMap();
+    }
+  };
+
   return (
     <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
       {/* Sequential Notification System */}
@@ -150,7 +160,10 @@ function App() {
     
       {/* Map */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <MapView alerts={alertsWithCoordinates} />
+        <MapView 
+          alerts={alertsWithCoordinates} 
+          focusMarker={focusedAlert}
+        />
         <div 
           className="scroll-indicator"
           onClick={scrollToAlerts}
@@ -190,6 +203,7 @@ function App() {
           <AlertCard 
             key={`${alert.title}-${alert.timestamp}-${index}`} 
             alert={alert}
+            onCardClick={handleAlertCardClick}
           />
         ))}
       </div>

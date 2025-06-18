@@ -15,6 +15,40 @@
   overflow: hidden;
 }
 
+.alert-card.clickable {
+  cursor: pointer;
+}
+
+.alert-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.18),
+    0 8px 16px rgba(0, 0, 0, 0.12);
+  border-color: rgba(79, 172, 254, 0.5);
+}
+
+.alert-card.clickable:active {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alert-card.clickable::after {
+  content: '📍 View on map';
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-size: 0.8rem;
+  color: #4facfe;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.alert-card.clickable:hover::after {
+  opacity: 1;
+}
+
 .alert-card::before {
   content: '';
   position: absolute;
