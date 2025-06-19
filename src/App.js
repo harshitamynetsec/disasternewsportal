@@ -9,9 +9,11 @@ import NotificationIcon from "./components/NotificationIcon";
 import LoadingIndicator from "./components/LoadingIndicator";
 import useNotifications from "./hooks/useNotifications";
 import useAlertData from "./hooks/useAlertData";
+import DisasterAnalysis from "./components/DisasterAnalysis";
 import "./App.css";
 
 function App() {
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -115,6 +117,9 @@ function App() {
     }
   };
 
+  // Handler to toggle the analysis panel
+  const toggleAnalysis = () => setIsAnalysisOpen(!isAnalysisOpen);
+
   return (
     <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
       {/* Sequential Notification System */}
@@ -122,6 +127,22 @@ function App() {
         notifications={notifications} 
         onDismiss={dismissNotification}
       />
+
+      {/* Disaster Analysis Panel */}
+      <DisasterAnalysis 
+        alerts={geocodedAlerts} 
+        isOpen={isAnalysisOpen} 
+        onClose={() => setIsAnalysisOpen(false)} 
+      />
+
+      {/* Floating Analysis Button on the left */}
+      <button 
+        onClick={toggleAnalysis} 
+        className={`analysis-float-btn${isAnalysisOpen ? ' hide' : ''}`}
+        title="Open Disaster Analysis"
+      >
+        Disaster Analysis
+      </button>
 
       {/* Header */}
       <div className="app-header" style={{ 

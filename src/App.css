@@ -494,3 +494,37 @@ button:disabled {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   -webkit-text-fill-color: initial;
 }
+
+.analysis-float-btn {
+  position: fixed;
+  top: 35%;
+  left: 0;
+  z-index: 1200;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  background: linear-gradient(135deg, #1a355c 0%, #0d2c52 100%);
+  color: #4fc3f7;
+  border: 2px solid #00fff7;
+  border-radius: 16px 0 0 16px;
+  padding: 18px 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 0 8px 1px #00fff755, 2px 0 8px rgba(0,0,0,0.12);
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s, left 0.4s cubic-bezier(0.4,0,0.2,1);
+  outline: none;
+}
+
+.analysis-float-btn:hover, .analysis-float-btn:focus {
+  background: linear-gradient(135deg, #0d2c52 0%, #1a355c 100%);
+  color: #00fff7;
+  border-color: #4fc3f7;
+  box-shadow: 0 0 16px 3px #00fff799, 2px 0 12px rgba(0,0,0,0.16);
+}
+
+.analysis-float-btn.hide {
+  left: -60px;
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -16,8 +16,8 @@ L.Icon.Default.mergeOptions({
 const disasterConfig = {
   earthquake: {
     color: '#8B4513',
-    icon: '🏚️',
-    animation: 'shake-marker ripple-marker',
+    icon: '🏚',
+    animation: 'shake-marker bloom-marker',
     name: 'Earthquake',
     gradient: 'linear-gradient(45deg, #8B4513, #D2691E)'
   },
@@ -37,12 +37,12 @@ const disasterConfig = {
   },
   storm: {
     color: '#666666',
-    icon: '⛈️',
+    icon: '⛈',
     animation: 'hurricane-marker ripple-marker',
     name: 'Storm',
     gradient: 'linear-gradient(45deg, #666666, #999999)'
   },
-  cyclone: {
+  hurricane: {
     color: '#2F4F4F',
     icon: '🌀',
     animation: 'hurricane-marker alert-marker',
@@ -72,14 +72,14 @@ const disasterConfig = {
   },
   landslide: {
     color: '#8B4513',
-    icon: '⛰️',
+    icon: '⛰',
     animation: 'shake-marker bloom-marker',
     name: 'Landslide',
     gradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
   },
   tornado: {
     color: '#2F4F4F',
-    icon: '🌪️',
+    icon: '🌪',
     animation: 'hurricane-marker alert-marker',
     name: 'Tornado',
     gradient: 'linear-gradient(45deg, #2F4F4F, #708090)'
@@ -87,14 +87,34 @@ const disasterConfig = {
   drought: {
     color: '#FFD700',
     icon: '🌵',
-    animation: 'pulse-marker bloom-marker',
+    animation: 'pulse-marker ripple-marker',
     name: 'Drought',
     gradient: 'linear-gradient(45deg, #FFD700, #FFEA00)'
   },
-
+  "severe thunderstorm" : {
+    color: '#808080',
+    icon: '⛈',
+    animation: 'hurricane-marker ripple-marker',
+    name: 'severe thunderstorm',
+    gradient: 'linear-gradient(45deg, #808080, #C0C0C0)'
+  },
+  weather: {
+    color: '#808080',
+    icon: '⛈',
+    animation: 'ripple-marker',
+    name: 'severe thunderstorm',
+    gradient: 'linear-gradient(45deg, #808080, #C0C0C0)'
+  },
+  incident: {
+    color: '#FF8C00',
+    icon: '🚨',
+    animation: 'pulse-marker',
+    name: 'Incident',
+    gradient: 'linear-gradient(45deg, #FF8C00, #FFA500)'
+  },
   default: {
     color: '#ff6b6b',
-    icon: '⚠️',
+    icon: '⚠',
     animation: 'pulse-marker',
     name: 'Alert',
     gradient: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)'
@@ -261,20 +281,20 @@ const AnimationStyles = () => (
     }
 
     /* Custom cluster styles */
-    .marker-cluster-small {
-      background: linear-gradient(45deg, #ff6b6b, #ff8e8e) !important;
-      animation: pulse 2s infinite !important;
-    }
+    // .marker-cluster-small {
+    //   background: linear-gradient(45deg, #ff6b6b, #ff8e8e) !important;
+    //   animation: pulse 2s infinite !important;
+    // }
     
-    .marker-cluster-medium {
-      background: linear-gradient(45deg, #ff4444, #ff6666) !important;
-      animation: pulse 1.5s infinite !important;
-    }
+    // .marker-cluster-medium {
+    //   background: linear-gradient(45deg, #ff4444, #ff6666) !important;
+    //   animation: pulse 1.5s infinite !important;
+    // }
     
-    .marker-cluster-large {
-      background: linear-gradient(45deg, #ff0000, #ff4444) !important;
-      animation: pulse 1s infinite !important;
-    }
+    // .marker-cluster-large {
+    //   background: linear-gradient(45deg, #ff0000, #ff4444) !important;
+    //   animation: pulse 1s infinite !important;
+    // }
   `}</style>
 );
 
