@@ -59,11 +59,10 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
   // Get top affected locations
   const topLocations = useMemo(() => {
     const locationStats = {};
-    
     getFilteredAlerts.forEach(alert => {
-      const country = alert.coordinates?.country || alert.country || 'Unknown';
-      if (country === 'Unknown') return;
-      
+      let country = alert.coordinates?.country || alert.country || alert.location || 'Unknown';
+      if (!country || country === 'Unknown' || country.trim() === '') return;
+      country = country.trim();
       if (!locationStats[country]) {
         locationStats[country] = {
           count: 0,
@@ -71,12 +70,10 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
           severity: 0
         };
       }
-      
       locationStats[country].count++;
       const disasterType = extractDisasterType(alert);
       locationStats[country].disasters[disasterType] = 
         (locationStats[country].disasters[disasterType] || 0) + 1;
-      
       // Simple severity scoring based on keywords
       const text = `${alert.title} ${alert.description || ''}`.toLowerCase();
       if (text.match(/critical|severe|major|catastrophic|emergency/)) {
@@ -87,7 +84,6 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
         locationStats[country].severity += 1;
       }
     });
-
     return Object.entries(locationStats)
       .sort(([,a], [,b]) => b.count - a.count)
       .slice(0, 10)
@@ -278,30 +274,36 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
             <div className="locations-section">
               <h3>🌍 Top Affected Locations</h3>
               <div className="locations-list">
-                {topLocations.map((location, index) => (
-                  <div key={location.country} className="location-item">
-                    <div className="location-rank">#{index + 1}</div>
-                    <div className="location-info">
-                      <div className="location-name">{location.country}</div>
-                      <div className="location-stats">
-                        <span className="alert-count">{location.count} alerts</span>
-                        <span 
-                          className="severity-badge"
-                          style={{ backgroundColor: getSeverityColor(location.avgSeverity) }}
-                        >
-                          Severity: {location.avgSeverity}
-                        </span>
-                      </div>
-                      <div className="disaster-breakdown">
-                        {Object.entries(location.disasters).map(([type, count]) => (
-                          <span key={type} className="disaster-tag">
-                            {getDisasterIcon(type)} {count}
+                {topLocations.length === 0 ? (
+                  <div style={{ color: '#b8d4f0', padding: '24px 0', textAlign: 'center' }}>
+                    No affected locations found for the selected filters.
+                  </div>
+                ) : (
+                  topLocations.map((location, index) => (
+                    <div key={location.country} className="location-item">
+                      <div className="location-rank">#{index + 1}</div>
+                      <div className="location-info">
+                        <div className="location-name">{location.country}</div>
+                        <div className="location-stats">
+                          <span className="alert-count">{location.count} alerts</span>
+                          <span 
+                            className="severity-badge"
+                            style={{ backgroundColor: getSeverityColor(location.avgSeverity) }}
+                          >
+                            Severity: {location.avgSeverity}
                           </span>
-                        ))}
+                        </div>
+                        <div className="disaster-breakdown">
+                          {Object.entries(location.disasters).map(([type, count]) => (
+                            <span key={type} className="disaster-tag">
+                              {getDisasterIcon(type)} {count}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}

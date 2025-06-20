@@ -4,6 +4,10 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import './css/MapView.css';
+import { MdOutlineHouseSiding, MdOutlineFlood, MdOutlineLocalFireDepartment, MdOutlineStorm, MdOutlineTsunami, MdOutlineWarning, MdOutlineReportProblem } from 'react-icons/md';
+import { FaMountain, FaWind, FaRegSun } from 'react-icons/fa';
+import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/wi';
+import { GiCactus, GiPoliceBadge, GiVolcano, GiDesert } from 'react-icons/gi';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -16,114 +20,131 @@ L.Icon.Default.mergeOptions({
 const disasterConfig = {
   earthquake: {
     color: '#8B4513',
-    icon: '🏚',
+    icon: MdOutlineHouseSiding,
     animation: 'shake-marker bloom-marker',
     name: 'Earthquake',
     gradient: 'linear-gradient(45deg, #8B4513, #D2691E)'
   },
   flood: {
     color: '#0066CC',
-    icon: '🌊',
+    icon: MdOutlineFlood,
     animation: 'flood-marker pulse-marker',
     name: 'Flood',
     gradient: 'linear-gradient(45deg, #0066CC, #4D9FFF)'
   },
   fire: {
     color: '#FF4500',
-    icon: '🔥',
+    icon: MdOutlineLocalFireDepartment,
     animation: 'fire-marker bloom-marker',
     name: 'Fire',
     gradient: 'linear-gradient(45deg, #FF4500, #FF8C00)'
   },
   storm: {
     color: '#666666',
-    icon: '⛈',
+    icon: MdOutlineStorm,
     animation: 'hurricane-marker ripple-marker',
     name: 'Storm',
     gradient: 'linear-gradient(45deg, #666666, #999999)'
   },
   hurricane: {
     color: '#2F4F4F',
-    icon: '🌀',
+    icon: WiHurricane,
     animation: 'hurricane-marker alert-marker',
     name: 'Cyclone',
     gradient: 'linear-gradient(45deg, #2F4F4F, #708090)'
   },
   wildfire:{
     color: '#FF6347',
-    icon: '🔥',
+    icon: MdOutlineLocalFireDepartment,
     animation: 'fire-marker bloom-marker',
     name: 'Wildfire',
     gradient: 'linear-gradient(45deg, #FF6347, #FF4500)'
   },
   tsunami: {
     color: '#00CED1',
-    icon: '🌊',
+    icon: MdOutlineTsunami,
     animation: 'flood-marker ripple-marker',
     name: 'Tsunami',
     gradient: 'linear-gradient(45deg, #00CED1, #40E0D0)'
   },
   volcano: {
     color: '#DC143C',
-    icon: '🌋',
+    icon: GiVolcano,
     animation: 'fire-marker alert-marker',
     name: 'Volcano',
     gradient: 'linear-gradient(45deg, #DC143C, #FF6347)'
   },
   landslide: {
     color: '#8B4513',
-    icon: '⛰',
+    icon: FaMountain,
     animation: 'shake-marker bloom-marker',
     name: 'Landslide',
     gradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
   },
   tornado: {
     color: '#2F4F4F',
-    icon: '🌪',
+    icon: WiTornado,
     animation: 'hurricane-marker alert-marker',
     name: 'Tornado',
     gradient: 'linear-gradient(45deg, #2F4F4F, #708090)'
   },
   drought: {
     color: '#FFD700',
-    icon: '🌵',
-    animation: 'pulse-marker ripple-marker',
+    icon: GiDesert,
+    animation: 'shake-marker',
     name: 'Drought',
-    gradient: 'linear-gradient(45deg, #FFD700, #FFEA00)'
+    gradient: '#FFD700'
   },
   "severe thunderstorm" : {
     color: '#808080',
-    icon: '⛈',
+    icon: MdOutlineStorm,
     animation: 'hurricane-marker ripple-marker',
     name: 'severe thunderstorm',
     gradient: 'linear-gradient(45deg, #808080, #C0C0C0)'
   },
   weather: {
     color: '#808080',
-    icon: '⛈',
+    icon: WiCloudyWindy,
     animation: 'ripple-marker',
     name: 'severe thunderstorm',
     gradient: 'linear-gradient(45deg, #808080, #C0C0C0)'
   },
   incident: {
     color: '#FF8C00',
-    icon: '🚨',
+    icon: GiPoliceBadge,
     animation: 'pulse-marker',
     name: 'Incident',
     gradient: 'linear-gradient(45deg, #FF8C00, #FFA500)'
   },
   default: {
     color: '#ff6b6b',
-    icon: '⚠',
+    icon: MdOutlineWarning,
     animation: 'pulse-marker',
     name: 'Alert',
     gradient: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)'
   }
 };
 
+// Helper to render icon as SVG string for Leaflet
+const renderIconToString = (IconComponent) => {
+  // Use ReactDOMServer to render to string
+  const ReactDOMServer = require('react-dom/server');
+  return ReactDOMServer.renderToStaticMarkup(<IconComponent size={20} color="white" />);
+};
+
 const createAnimatedIcon = (disasterType) => {
   const config = disasterConfig[disasterType?.toLowerCase()] || disasterConfig.default;
-
+  const iconSize = disasterType?.toLowerCase() === 'drought' ? 24 : 20;
+  let iconSvg;
+  if (disasterType?.toLowerCase() === 'drought') {
+    iconSvg = renderIconToString((props) => (
+      <span style={{ filter: 'drop-shadow(0 0 2px #000) drop-shadow(0 1px 2px #000)' }}>
+        <config.icon size={iconSize} color="#fff" {...props} />
+      </span>
+    ));
+  } else {
+    iconSvg = renderIconToString((props) => <config.icon size={iconSize} color="#8B4513" {...props} />);
+  }
   const markerHtml = `
     <div class="animated-marker ${config.animation}" style="
       width: 30px;
@@ -141,10 +162,9 @@ const createAnimatedIcon = (disasterType) => {
       position: relative;
       z-index: 10;
     ">
-      ${config.icon}
+      ${iconSvg}
     </div>
   `;
-
   return L.divIcon({
     html: markerHtml,
     className: 'custom-animated-marker',
@@ -295,6 +315,11 @@ const AnimationStyles = () => (
     //   background: linear-gradient(45deg, #ff0000, #ff4444) !important;
     //   animation: pulse 1s infinite !important;
     // }
+
+    .drought-glow-marker {
+      box-shadow: 0 0 16px 6px #FFD700, 0 0 32px 12px #FFB30044;
+      border: 3px solid #FFB300;
+    }
   `}</style>
 );
 
@@ -353,7 +378,7 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
             <Popup>
               <div className="custom-popup">
                 <div className="popup-header">
-                  <span className="popup-icon">{config.icon}</span>
+                  <span className="popup-icon"><config.icon size={20} color={config.color || 'white'} /></span>
                   <span className="popup-type">{config.name}</span>
                   <span className="popup-severity">
                     {alert.severity || 'Medium'}
