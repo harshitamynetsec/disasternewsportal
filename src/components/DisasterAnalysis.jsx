@@ -139,7 +139,7 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
       flood: '🌊',
       fire: '🔥',
       storm: '🌪️',
-      volcanic: '🌋',
+      volcano: '🌋',
       tsunami: '🌊',
       drought: '🏜️',
       landslide: '⛰️',
@@ -168,7 +168,7 @@ const DisasterAnalysis = ({ alerts = [], isOpen, onClose }) => {
     <div className="disaster-analysis-overlay" onClick={onClose}>
       <div className="disaster-analysis-panel" onClick={e => e.stopPropagation()}>
         <div className="disaster-analysis-header">
-          <h2>🔍 Disaster Analysis</h2>
+          <h2>Disaster Analysis</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 

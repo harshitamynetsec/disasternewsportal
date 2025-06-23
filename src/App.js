@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import MapView from "./components/MapView";
 import AlertCard from "./components/AlertCard";
 import SideMenu from "./components/SideMenu";
-import AlertStats from "./components/AlertStats";
+//import AlertStats from "./components/AlertStats";
 import AlertFilter from "./components/AlertFilter";
 import NotificationManager from "./components/NotificationManager";
 import NotificationIcon from "./components/NotificationIcon";
@@ -236,11 +236,11 @@ function App() {
       </div>
 
       {/* Alert Statistics */}
-      <AlertStats alerts={filteredAlerts} />
+      {/* <AlertStats alerts={filteredAlerts} />
 
        <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0 16px 0' }}>
         <button onClick={scrollToMap} className="jump-to-map-btn">Jump to Map</button>
-      </div>
+      </div> */}
 
       {/* Debug Panel (Development only) */}
       {process.env.NODE_ENV === 'development' && (
