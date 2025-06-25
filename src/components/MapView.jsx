@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -242,6 +242,13 @@ const AnimationStyles = () => (
       100% { width: 60px; height: 60px; opacity: 0; }
     }
 
+    /* New neon glow animation for site rings */
+    @keyframes neonGlow {
+      0% { box-shadow: 0 0 5px #ffff00, 0 0 10px #ffff00, 0 0 15px #ffff00; }
+      50% { box-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00, 0 0 30px #ffff00; }
+      100% { box-shadow: 0 0 5px #ffff00, 0 0 10px #ffff00, 0 0 15px #ffff00; }
+    }
+
     /* Animation Classes */
     .pulse-marker {
       border-radius: 50%;
@@ -323,6 +330,11 @@ const AnimationStyles = () => (
     .drought-glow-marker {
       box-shadow: 0 0 16px 6px #FFD700, 0 0 32px 12px #FFB30044;
       border: 3px solid #FFB300;
+    }
+
+    /* Neon ring styles */
+    .neon-ring {
+      animation: neonGlow 2s ease-in-out infinite;
     }
   `}</style>
 );
@@ -426,7 +438,7 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   );
 };
 
-// Component to render static location markers (sites and emergency contacts)
+// Component to render static location markers (sites and emergency contacts) with neon rings
 const LocationMarkers = ({ locations }) => {
   return (
     <>
@@ -439,49 +451,80 @@ const LocationMarkers = ({ locations }) => {
         const icon = location.type === 'emergency_contact' ? emergencyIcon : buildingIcon;
         
         return (
-          <Marker
-            key={location.id}
-            position={[location.latitude, location.longitude]}
-            icon={icon}
-          >
-            <Popup>
-              <div style={{ minWidth: '200px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '8px', 
-                  marginBottom: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}>
-                  {location.type === 'emergency_contact' ? (
-                    <MdLocalHospital size={20} color="#e74c3c" />
-                  ) : (
-                    <IoLocationSharp size={20} color="#2d98da" />
-                  )}
-                  <span>{location.type === 'emergency_contact' ? 'Emergency Contact' : 'Site'}</span>
+          <React.Fragment key={location.id}>
+            {/* Add yellow neon ring around site markers only */}
+            {location.type === 'site' && (
+              <Circle
+                center={[location.latitude, location.longitude]}
+                radius={50000} // 50km in meters
+                pathOptions={{
+                  color: '#ffff00', // Yellow color
+                  weight: 3,
+                  opacity: 0.8,
+                  fillColor: '#ffff00',
+                  fillOpacity: 0.1,
+                  className: 'neon-ring'
+                }}
+              />
+            )}
+            
+            {/* The marker itself */}
+            <Marker
+              position={[location.latitude, location.longitude]}
+              icon={icon}
+            >
+              <Popup>
+                <div style={{ minWidth: '200px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    marginBottom: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                  }}>
+                    {location.type === 'emergency_contact' ? (
+                      <MdLocalHospital size={20} color="#e74c3c" />
+                    ) : (
+                      <IoLocationSharp size={20} color="#2d98da" />
+                    )}
+                    <span>{location.type === 'emergency_contact' ? 'Emergency Contact' : 'Site'}</span>
+                  </div>
+                  <div>
+                    <strong>{location.name}</strong>
+                    {location.address && (
+                      <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                        📍 {location.address}
+                      </div>
+                    )}
+                    {location.phone && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📞 {location.phone}
+                      </div>
+                    )}
+                    {location.email && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📧 {location.email}
+                      </div>
+                    )}
+                    {location.type === 'site' && (
+                      <div style={{ 
+                        marginTop: '8px', 
+                        padding: '4px 8px', 
+                        backgroundColor: '#fff3cd', 
+                        border: '1px solid #ffeaa7',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        color: '#856404'
+                      }}>
+                        {/* 🟡 50km Coverage Zone */}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <strong>{location.name}</strong>
-                  {location.address && (
-                    <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
-                      📍 {location.address}
-                    </div>
-                  )}
-                  {location.phone && (
-                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                      📞 {location.phone}
-                    </div>
-                  )}
-                  {location.email && (
-                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                      📧 {location.email}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
+              </Popup>
+            </Marker>
+          </React.Fragment>
         );
       })}
     </>
@@ -552,6 +595,8 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
         <br />
         🏢 <strong>{locationsToShow.length}</strong> locations shown
+        <br />
+        
       </div>
 
       <MapContainer
@@ -578,7 +623,7 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
           <WrappedMarkers alerts={validAlerts} createAnimatedIcon={createAnimatedIcon} />
         </MarkerClusterGroup>
         
-        {/* Render location markers (sites and emergency contacts) */}
+        {/* Render location markers (sites and emergency contacts) with neon rings */}
         <LocationMarkers locations={locationsToShow} />
         
         {/* Add MapFocus component */}
