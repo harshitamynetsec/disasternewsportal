@@ -8,12 +8,32 @@ import { MdOutlineHouseSiding, MdOutlineFlood, MdOutlineLocalFireDepartment, MdO
 import { FaMountain, FaWind, FaRegSun } from 'react-icons/fa';
 import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/wi';
 import { GiCactus, GiPoliceBadge, GiVolcano, GiDesert } from 'react-icons/gi';
+import { IoLocationSharp } from 'react-icons/io5';
+import { MdLocalHospital } from 'react-icons/md';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+});
+
+// Building/Site icon
+const buildingIcon = new L.DivIcon({
+  html: `<div style="font-size: 2rem; color: #2d98da;"><svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' viewBox='0 0 24 24'><path d='M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z'/></svg></div>`,
+  className: '',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32]
+});
+
+// Emergency contact icon
+const emergencyIcon = new L.DivIcon({
+  html: `<div style="font-size: 2rem; color: #e74c3c;"><svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' viewBox='0 0 24 24'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg></div>`,
+  className: '',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32]
 });
 
 // Enhanced disaster configuration with animations and icons
@@ -300,22 +320,6 @@ const AnimationStyles = () => (
       transition: transform 0.2s ease;
     }
 
-    /* Custom cluster styles */
-    // .marker-cluster-small {
-    //   background: linear-gradient(45deg, #ff6b6b, #ff8e8e) !important;
-    //   animation: pulse 2s infinite !important;
-    // }
-    
-    // .marker-cluster-medium {
-    //   background: linear-gradient(45deg, #ff4444, #ff6666) !important;
-    //   animation: pulse 1.5s infinite !important;
-    // }
-    
-    // .marker-cluster-large {
-    //   background: linear-gradient(45deg, #ff0000, #ff4444) !important;
-    //   animation: pulse 1s infinite !important;
-    // }
-
     .drought-glow-marker {
       box-shadow: 0 0 16px 6px #FFD700, 0 0 32px 12px #FFB30044;
       border: 3px solid #FFB300;
@@ -422,13 +426,78 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   );
 };
 
-const MapView = ({ alerts, focusMarker }) => {
+// Component to render static location markers (sites and emergency contacts)
+const LocationMarkers = ({ locations }) => {
+  return (
+    <>
+      {locations.map((location) => {
+        if (!location.latitude || !location.longitude) {
+          return null;
+        }
+
+        // Choose icon based on type
+        const icon = location.type === 'emergency_contact' ? emergencyIcon : buildingIcon;
+        
+        return (
+          <Marker
+            key={location.id}
+            position={[location.latitude, location.longitude]}
+            icon={icon}
+          >
+            <Popup>
+              <div style={{ minWidth: '200px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginBottom: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}>
+                  {location.type === 'emergency_contact' ? (
+                    <MdLocalHospital size={20} color="#e74c3c" />
+                  ) : (
+                    <IoLocationSharp size={20} color="#2d98da" />
+                  )}
+                  <span>{location.type === 'emergency_contact' ? 'Emergency Contact' : 'Site'}</span>
+                </div>
+                <div>
+                  <strong>{location.name}</strong>
+                  {location.address && (
+                    <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                      📍 {location.address}
+                    </div>
+                  )}
+                  {location.phone && (
+                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                      📞 {location.phone}
+                    </div>
+                  )}
+                  {location.email && (
+                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                      📧 {location.email}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
+    </>
+  );
+};
+
+const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }) => {
   const mapRef = useRef(null);
   const validAlerts = alerts.filter(alert =>
     alert.coordinates &&
     typeof alert.coordinates.lat === "number" &&
     typeof alert.coordinates.lng === "number"
   );
+
+  // Use allLocations if provided, otherwise combine sites and emergencyContacts
+  const locationsToShow = allLocations || [...(sites || []), ...(emergencyContacts || [])];
 
   const getMapCenter = () => {
     if (validAlerts.length === 0) return [20.5937, 78.9629]; // India center
@@ -481,6 +550,8 @@ const MapView = ({ alerts, focusMarker }) => {
         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
       }}>
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
+        <br />
+        🏢 <strong>{locationsToShow.length}</strong> locations shown
       </div>
 
       <MapContainer
@@ -506,6 +577,9 @@ const MapView = ({ alerts, focusMarker }) => {
         >
           <WrappedMarkers alerts={validAlerts} createAnimatedIcon={createAnimatedIcon} />
         </MarkerClusterGroup>
+        
+        {/* Render location markers (sites and emergency contacts) */}
+        <LocationMarkers locations={locationsToShow} />
         
         {/* Add MapFocus component */}
         {focusPosition && (

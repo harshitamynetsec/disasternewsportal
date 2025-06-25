@@ -10,6 +10,7 @@ import LoadingIndicator from "./components/LoadingIndicator";
 import useNotifications from "./hooks/useNotifications";
 import useAlertData from "./hooks/useAlertData";
 import DisasterAnalysis from "./components/DisasterAnalysis";
+import useSites from "./hooks/useSites";
 import "./App.css";
 
 function App() {
@@ -19,6 +20,14 @@ function App() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [focusedAlert, setFocusedAlert] = useState(null);
+
+  // Get sites data from the useSites hook (only hp-sites route)
+  const { 
+    sites, 
+    isLoading: isLoadingSites, 
+    lastFetchTime: sitesLastFetchTime,
+    refetch: refetchSites 
+  } = useSites();
 
   // Custom hooks for clean separation of concerns
   const { 
@@ -82,6 +91,7 @@ function App() {
   }, {});
 
   console.log(`Current page: ${alertsWithCoordinates.length} alerts with coordinates out of ${filteredAlerts.length} total`);
+  console.log(`Sites loaded: ${sites.length}`);
 
   const scrollToAlerts = () => {
     const alertsSection = document.querySelector('.alerts-section');
@@ -168,6 +178,7 @@ function App() {
           <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
         </div>
       </div>
+      
       {/* Notification Icon for desktop (fixed position) */}
       {!isMobile && (
         <NotificationIcon 
@@ -190,6 +201,7 @@ function App() {
         <MapView 
           alerts={alertsWithCoordinates} 
           focusMarker={focusedAlert}
+          sites={sites}
         />
         <div 
           className="scroll-indicator"
@@ -207,6 +219,7 @@ function App() {
         </div>
         <div className="map-footer">
           <div>📍 Mapped: {alertsWithCoordinates.length}/{filteredAlerts.length}</div>
+          <div>🏢 Sites: {sites.length}</div>
           <div>🌏 Countries: {[...new Set(alertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))].join(', ')}</div>
           {Object.keys(coordinateStats).length > 0 && (
             <div style={{ fontSize: "0.85em", opacity: 0.8 }}>
@@ -217,13 +230,17 @@ function App() {
           )}
           {lastFetchTime && (
             <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
-              🔄 Last updated: {lastFetchTime.toLocaleTimeString()}
+              🔄 Alerts updated: {lastFetchTime.toLocaleTimeString()}
+            </div>
+          )}
+          {sitesLastFetchTime && (
+            <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
+              🏗️ Sites updated: {sitesLastFetchTime.toLocaleTimeString()}
             </div>
           )}
         </div>
       </div>
       
-
       {/* Alert Cards */}
       <div className="alert-cards">
         {filteredAlerts.map((alert, index) => (
@@ -246,21 +263,20 @@ function App() {
       {process.env.NODE_ENV === 'development' && (
         <div className="debug-panel">
           <h3>🛠️ Debug Info</h3>
-          <p>Total: {alerts.length}</p>
+          <p>Total Alerts: {alerts.length}</p>
           <p>Geocoded: {geocodedAlerts.length}</p>
           <p>Filtered: {filteredAlerts.length}</p>
           <p>With Coordinates: {alertsWithCoordinates.length}</p>
+          <p>Sites: {sites.length}</p>
+          <p>Sites Loading: {isLoadingSites ? 'Yes' : 'No'}</p>
           <p>Coordinate Sources: {JSON.stringify(coordinateStats)}</p>
           <p>Active Notifications: {notifications.length}</p>
           <p>Notification History: {notificationHistory.length}</p>
           <p>Unread Count: {unreadCount}</p>
-          <p>Last Fetch: {lastFetchTime?.toLocaleString()}</p>
+          <p>Last Alerts Fetch: {lastFetchTime?.toLocaleString()}</p>
+          <p>Last Sites Fetch: {sitesLastFetchTime?.toLocaleString()}</p>
         </div>
       )}
-
-      
-
-     
     </div>
   );
 }
