@@ -438,29 +438,6 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   );
 };
 
-// Restore the siteClusterIcon function near the top, after buildingIcon
-const siteClusterIcon = (cluster) => {
-  const count = cluster.getChildCount();
-  return L.divIcon({
-    html: `
-      <div class="site-cluster-outer-ring">
-        <div class="site-cluster-inner">
-          <span class="site-cluster-icon-svg">
-            <svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='currentColor' viewBox='0 0 24 24'><path d='M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z'/></svg>
-          </span>
-          <span class="site-cluster-count-bg">
-            <span class="site-cluster-count">${count}</span>
-          </span>
-        </div>
-      </div>
-    `,
-    className: 'site-cluster-icon',
-    iconSize: [54, 54],
-    iconAnchor: [27, 27],
-    popupAnchor: [0, -27]
-  });
-};
-
 // Component to render static location markers (sites and emergency contacts) with neon rings
 const LocationMarkers = ({ locations }) => {
   return (
@@ -482,10 +459,10 @@ const LocationMarkers = ({ locations }) => {
                 radius={50000} // 50km in meters
                 pathOptions={{
                   color: '#ffff00', // Yellow color
-                  weight: 3,
-                  opacity: 0.8,
+                  weight: 2,
+                  opacity: 0.5,
                   fillColor: '#ffff00',
-                  fillOpacity: 0.1,
+                  fillOpacity: 0.09,
                   className: 'neon-ring'
                 }}
               />
@@ -530,19 +507,7 @@ const LocationMarkers = ({ locations }) => {
                         📧 {location.email}
                       </div>
                     )}
-                    {location.type === 'site' && (
-                      <div style={{ 
-                        marginTop: '8px', 
-                        padding: '4px 8px', 
-                        backgroundColor: '#fff3cd', 
-                        border: '1px solid #ffeaa7',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        color: '#856404'
-                      }}>
-                        {/* 🟡 50km Coverage Zone */}
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
               </Popup>
@@ -646,18 +611,8 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
           <WrappedMarkers alerts={validAlerts} createAnimatedIcon={createAnimatedIcon} />
         </MarkerClusterGroup>
         
-        {/* Site and location markers cluster (separate) */}
-        <MarkerClusterGroup
-          chunkedLoading
-          spiderfyOnMaxZoom={false}
-          showCoverageOnHover={false}
-          zoomToBoundsOnClick={true}
-          maxClusterRadius={50}
-          iconCreateFunction={siteClusterIcon}
-          disableClusteringAtZoom={12}
-        >
-          <LocationMarkers locations={locationsToShow} />
-        </MarkerClusterGroup>
+        {/* Render location markers (sites and emergency contacts) with neon rings */}
+        <LocationMarkers locations={locationsToShow} />
         
         {/* Add MapFocus component */}
         {focusPosition && (
