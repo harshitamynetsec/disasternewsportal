@@ -18,13 +18,50 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
 });
 
-// Building/Site icon
+// Stunning, glowing, theme-adaptive site icon
 const buildingIcon = new L.DivIcon({
-  html: `<div style="font-size: 2rem; color: #2d98da;"><svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' viewBox='0 0 24 24'><path d='M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z'/></svg></div>`,
+  html: `
+    <div style="
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(30, 60, 150, 0.18);
+      box-shadow: 0 0 8px 3px #2d98da66, 0 2px 6px #00c3ff88, 0 0 0 3px #2d98da22;
+      border: 2.5px solid #2d98da;
+      position: relative;
+      z-index: 2;
+      animation: siteBuildingGlow 2.2s infinite alternate;
+      backdrop-filter: blur(2px) saturate(1.2);
+    ">
+      <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='currentColor' viewBox='0 0 24 24' style="display:block; color: #fff; filter: drop-shadow(0 0 4px #00eaff99);">
+        <defs>
+          <radialGradient id='site-glow' cx='50%' cy='50%' r='60%'>
+            <stop offset='0%' stop-color='#aeefff' stop-opacity='1'/>
+            <stop offset='80%' stop-color='#2d98da' stop-opacity='0.5'/>
+            <stop offset='100%' stop-color='#2d98da' stop-opacity='0.12'/>
+          </radialGradient>
+        </defs>
+        <circle cx='12' cy='12' r='11' fill='url(#site-glow)' opacity='0.6'/>
+        <path d='M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z' fill='#fff' stroke='#2d98da' stroke-width='0.7'/>
+      </svg>
+      <div style="
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 50%;
+        box-shadow: 0 0 16px 4px #00eaff33, 0 0 6px 2px #2d98da55;
+        pointer-events: none;
+        opacity: 0.5;
+        animation: siteBuildingPulse 2.2s infinite alternate;
+      "></div>
+    </div>
+  `,
   className: '',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -38]
 });
 
 // Emergency contact icon
@@ -441,6 +478,15 @@ const AnimationStyles = () => (
     .site-toggle-container:hover .toggle-text {
       opacity: 1;
     }
+
+    @keyframes siteBuildingGlow {
+      0% { box-shadow: 0 0 6px 2px #00eaff66, 0 0 12px 4px #2d98da33, 0 2px 8px #0005; }
+      100% { box-shadow: 0 0 16px 6px #00eaff88, 0 0 20px 8px #2d98da55, 0 4px 16px #0007; }
+    }
+    @keyframes siteBuildingPulse {
+      0% { opacity: 0.5; transform: scale(1); }
+      100% { opacity: 0.7; transform: scale(1.09); }
+    }
   `}</style>
 );
 
@@ -543,88 +589,183 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   );
 };
 
-// Component to render static location markers (sites and emergency contacts) with neon rings
+// Helper function to calculate distance between two lat/lng points in km
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
+// Group sites whose geofence circles overlap (distance <= 100km)
+function groupSitesByGeofence(sites) {
+  const groups = [];
+  const visited = new Set();
+
+  for (let i = 0; i < sites.length; i++) {
+    if (visited.has(i)) continue;
+    const group = [i];
+    visited.add(i);
+    for (let j = 0; j < sites.length; j++) {
+      if (i !== j && !visited.has(j)) {
+        const d = calculateDistance(sites[i].latitude, sites[i].longitude, sites[j].latitude, sites[j].longitude);
+        if (d <= 100) {
+          group.push(j);
+          visited.add(j);
+        }
+      }
+    }
+    groups.push(group);
+  }
+  return groups;
+}
+
 const LocationMarkers = ({ locations, showSites }) => {
+  // Only consider site markers for geofence grouping
+  const siteMarkers = locations.filter(loc => loc.type === 'site' && showSites);
+  const otherMarkers = locations.filter(loc => loc.type !== 'site');
+
+  // Group sites by overlapping geofence
+  const groups = groupSitesByGeofence(siteMarkers);
+
+  // For each group, calculate centroid and max distance
+  const groupCircles = groups.map(groupIdxs => {
+    if (groupIdxs.length === 1) return null; // skip singletons
+    const groupSites = groupIdxs.map(idx => siteMarkers[idx]);
+    const lat = groupSites.reduce((sum, s) => sum + s.latitude, 0) / groupSites.length;
+    const lng = groupSites.reduce((sum, s) => sum + s.longitude, 0) / groupSites.length;
+    const maxDist = Math.max(...groupSites.map(s => calculateDistance(lat, lng, s.latitude, s.longitude)));
+    return {
+      center: [lat, lng],
+      radius: maxDist * 1000 + 50000, // meters: maxDist (km) + 50km
+      members: groupIdxs
+    };
+  }).filter(Boolean);
+
+  // Markers in a group
+  const groupedMarkerIdxs = new Set(groupCircles.flatMap(g => g.members));
+
   return (
     <>
-      {locations.map((location) => {
-        if (!location.latitude || !location.longitude) {
-          return null;
-        }
-
-        // Hide site markers if showSites is false
-        if (location.type === 'site' && !showSites) {
-          return null;
-        }
-
-        // Choose icon based on type
-        const icon = location.type === 'emergency_contact' ? emergencyIcon : buildingIcon;
-        
-        return (
-          <React.Fragment key={location.id}>
-            {/* Add yellow neon ring around site markers only */}
-            {location.type === 'site' && showSites && (
-              <Circle
-                center={[location.latitude, location.longitude]}
-                radius={50000} // 50km in meters
-                pathOptions={{
-                  color: '#ffff00', // Yellow color
-                  weight: 2,
-                  opacity: 0.5,
-                  fillColor: '#ffff00',
-                  fillOpacity: 0.09,
-                  className: 'neon-ring'
-                }}
-              />
-            )}
-            
-            {/* The marker itself */}
-            <Marker
-              position={[location.latitude, location.longitude]}
-              icon={icon}
-            >
-              <Popup>
-                <div style={{ minWidth: '200px' }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    marginBottom: '8px',
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                  }}>
-                    {location.type === 'emergency_contact' ? (
-                      <MdLocalHospital size={20} color="#e74c3c" />
-                    ) : (
-                      <IoLocationSharp size={20} color="#2d98da" />
-                    )}
-                    <span>{location.type === 'emergency_contact' ? 'Emergency Contact' : 'Site'}</span>
-                  </div>
-                  <div>
-                    <strong>{location.name}</strong>
-                    {location.address && (
-                      <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
-                        📍 {location.address}
-                      </div>
-                    )}
-                    {location.phone && (
-                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                        📞 {location.phone}
-                      </div>
-                    )}
-                    {location.email && (
-                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                        📧 {location.email}
-                      </div>
-                    )}
-                    
-                  </div>
+      {/* Draw group geofence circles */}
+      {groupCircles.map((circle, i) => (
+        <Circle
+          key={`group-geofence-${i}`}
+          center={circle.center}
+          radius={circle.radius}
+          pathOptions={{
+            color: '#ffff00',
+            weight: 3,
+            opacity: 0.7,
+            fillColor: '#ffff00',
+            fillOpacity: 0.08,
+            className: 'site-geofence-ring neon-ring'
+          }}
+        />
+      ))}
+      {/* Draw site markers and individual geofence for ungrouped */}
+      {siteMarkers.map((site, idx) => (
+        <React.Fragment key={site.id}>
+          {!groupedMarkerIdxs.has(idx) && (
+            <Circle
+              center={[site.latitude, site.longitude]}
+              radius={50000}
+              pathOptions={{
+                color: '#ffff00',
+                weight: 2,
+                opacity: 0.5,
+                fillColor: '#ffff00',
+                fillOpacity: 0.09,
+                className: 'neon-ring'
+              }}
+            />
+          )}
+          <Marker
+            position={[site.latitude, site.longitude]}
+            icon={buildingIcon}
+          >
+            <Popup>
+              <div style={{ minWidth: '200px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}>
+                  <IoLocationSharp size={20} color="#2d98da" />
+                  <span>Site</span>
                 </div>
-              </Popup>
-            </Marker>
-          </React.Fragment>
-        );
-      })}
+                <div>
+                  <strong>{site.name}</strong>
+                  {site.address && (
+                    <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                      📍 {site.address}
+                    </div>
+                  )}
+                  {site.phone && (
+                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                      📞 {site.phone}
+                    </div>
+                  )}
+                  {site.email && (
+                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                      📧 {site.email}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        </React.Fragment>
+      ))}
+      {/* Draw other markers (emergency contacts, etc) */}
+      {otherMarkers.map(location => (
+        <Marker
+          key={location.id}
+          position={[location.latitude, location.longitude]}
+          icon={emergencyIcon}
+        >
+          <Popup>
+            <div style={{ minWidth: '200px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '8px',
+                fontSize: '16px',
+                fontWeight: 'bold'
+              }}>
+                <MdLocalHospital size={20} color="#e74c3c" />
+                <span>Emergency Contact</span>
+              </div>
+              <div>
+                <strong>{location.name}</strong>
+                {location.address && (
+                  <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                    📍 {location.address}
+                  </div>
+                )}
+                {location.phone && (
+                  <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                    📞 {location.phone}
+                  </div>
+                )}
+                {location.email && (
+                  <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                    📧 {location.email}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </>
   );
 };

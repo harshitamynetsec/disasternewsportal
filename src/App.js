@@ -94,7 +94,7 @@ function App() {
   console.log(`Sites loaded: ${sites.length}`);
 
   const scrollToAlerts = () => {
-    const alertsSection = document.querySelector('.alerts-section');
+    const alertsSection = document.querySelector('.alert-cards');
     if (alertsSection) {
       const yOffset = -80; // Offset to account for header and spacing
       const y = alertsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
