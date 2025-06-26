@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
@@ -249,6 +249,18 @@ const AnimationStyles = () => (
       100% { box-shadow: 0 0 5px #ffff00, 0 0 10px #ffff00, 0 0 15px #ffff00; }
     }
 
+    /* Toggle Button Animations */
+    @keyframes slideToggle {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(26px); }
+    }
+
+    @keyframes buttonGlow {
+      0% { box-shadow: 0 0 5px rgba(45, 152, 218, 0.3), 0 0 10px rgba(45, 152, 218, 0.2); }
+      50% { box-shadow: 0 0 15px rgba(45, 152, 218, 0.6), 0 0 25px rgba(45, 152, 218, 0.4); }
+      100% { box-shadow: 0 0 5px rgba(45, 152, 218, 0.3), 0 0 10px rgba(45, 152, 218, 0.2); }
+    }
+
     /* Animation Classes */
     .pulse-marker {
       border-radius: 50%;
@@ -335,6 +347,99 @@ const AnimationStyles = () => (
     /* Neon ring styles */
     .neon-ring {
       animation: neonGlow 2s ease-in-out infinite;
+    }
+
+    /* Toggle Button Styles */
+    .site-toggle-container {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 401;
+      background: rgba(12, 45, 92, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px 15px;
+      border: 2px solid #2d98da;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      animation: buttonGlow 3s ease-in-out infinite;
+      transition: all 0.3s ease;
+    }
+
+    .site-toggle-container:hover {
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 12px 35px rgba(45, 152, 218, 0.4);
+    }
+
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 54px;
+      height: 28px;
+      background: linear-gradient(45deg, #34495e, #2c3e50);
+      border-radius: 14px;
+      border: 2px solid #34495e;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch.active {
+      background: linear-gradient(45deg, #2d98da, #3498db);
+      border-color: #2d98da;
+      box-shadow: 
+        inset 0 2px 4px rgba(0, 0, 0, 0.2),
+        0 0 15px rgba(45, 152, 218, 0.5);
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(45deg, #ecf0f1, #bdc3c7);
+      border-radius: 50%;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-slider.active {
+      transform: translateX(26px);
+      background: linear-gradient(45deg, #ffffff, #f8f9fa);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .toggle-icon {
+      font-size: 18px;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-text {
+      font-size: 11px;
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+
+    .site-toggle-container:hover .toggle-icon {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .site-toggle-container:hover .toggle-text {
+      opacity: 1;
     }
   `}</style>
 );
@@ -439,11 +544,16 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
 };
 
 // Component to render static location markers (sites and emergency contacts) with neon rings
-const LocationMarkers = ({ locations }) => {
+const LocationMarkers = ({ locations, showSites }) => {
   return (
     <>
       {locations.map((location) => {
         if (!location.latitude || !location.longitude) {
+          return null;
+        }
+
+        // Hide site markers if showSites is false
+        if (location.type === 'site' && !showSites) {
           return null;
         }
 
@@ -453,7 +563,7 @@ const LocationMarkers = ({ locations }) => {
         return (
           <React.Fragment key={location.id}>
             {/* Add yellow neon ring around site markers only */}
-            {location.type === 'site' && (
+            {location.type === 'site' && showSites && (
               <Circle
                 center={[location.latitude, location.longitude]}
                 radius={50000} // 50km in meters
@@ -521,6 +631,8 @@ const LocationMarkers = ({ locations }) => {
 
 const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }) => {
   const mapRef = useRef(null);
+  const [showSites, setShowSites] = useState(true);
+  
   const validAlerts = alerts.filter(alert =>
     alert.coordinates &&
     typeof alert.coordinates.lat === "number" &&
@@ -529,6 +641,9 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
 
   // Use allLocations if provided, otherwise combine sites and emergencyContacts
   const locationsToShow = allLocations || [...(sites || []), ...(emergencyContacts || [])];
+  
+  // Count only site locations for the toggle counter
+  const siteCount = locationsToShow.filter(location => location.type === 'site').length;
 
   const getMapCenter = () => {
     if (validAlerts.length === 0) return [20.5937, 78.9629]; // India center
@@ -565,6 +680,25 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
     <div className="map-section" style={{ position: 'relative' }}>
       <AnimationStyles />
       
+      {/* Site Toggle Button */}
+      <div className="site-toggle-container site-toggle-bottom-left">
+        <label className="toggle-label" onClick={() => setShowSites(!showSites)}>
+          <div className="toggle-icon">
+            <IoLocationSharp />
+          </div>
+          <div className={`toggle-switch ${showSites ? 'active' : ''}`}>
+            <div className={`toggle-slider ${showSites ? 'active' : ''}`}></div>
+          </div>
+          <div className="toggle-text">
+            {showSites ? 'Sites ON' : 'Sites OFF'}
+            <br />
+            <span style={{ fontSize: '9px', opacity: 0.7 }}>
+              ({siteCount} sites)
+            </span>
+          </div>
+        </label>
+      </div>
+      
       {/* Enhanced counter with animation toggle */}
       <div style={{
         position: 'absolute',
@@ -584,7 +718,7 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
         <br />
         🏢 <strong>{locationsToShow.length}</strong> locations shown
         <br />
-        
+        🏭 <strong>{showSites ? siteCount : 0}</strong> sites visible
       </div>
 
       <MapContainer
@@ -612,7 +746,7 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
         </MarkerClusterGroup>
         
         {/* Render location markers (sites and emergency contacts) with neon rings */}
-        <LocationMarkers locations={locationsToShow} />
+        <LocationMarkers locations={locationsToShow} showSites={showSites} />
         
         {/* Add MapFocus component */}
         {focusPosition && (
