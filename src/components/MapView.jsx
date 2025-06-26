@@ -718,7 +718,7 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
         <br />
         🏢 <strong>{locationsToShow.length}</strong> locations shown
         <br />
-        🏭 <strong>{showSites ? siteCount : 0}</strong> sites visible
+        
       </div>
 
       <MapContainer
