@@ -9,7 +9,6 @@ import { FaMountain, FaWind, FaRegSun } from 'react-icons/fa';
 import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/wi';
 import { GiCactus, GiPoliceBadge, GiVolcano, GiDesert } from 'react-icons/gi';
 import { IoLocationSharp } from 'react-icons/io5';
-import { MdLocalHospital } from 'react-icons/md';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -62,15 +61,6 @@ const buildingIcon = new L.DivIcon({
   iconSize: [38, 38],
   iconAnchor: [19, 38],
   popupAnchor: [0, -38]
-});
-
-// Emergency contact icon
-const emergencyIcon = new L.DivIcon({
-  html: `<div style="font-size: 2rem; color: #e74c3c;"><svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' viewBox='0 0 24 24'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg></div>`,
-  className: '',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32]
 });
 
 // Enhanced disaster configuration with animations and icons
@@ -603,16 +593,24 @@ const calculateDistance = (lat1, lng1, lat2, lng2) => {
 
 // Group sites whose geofence circles overlap (distance <= 100km)
 function groupSitesByGeofence(sites) {
+  // Filter out sites with invalid coordinates first
+  const validSites = sites.filter(site => 
+    typeof site.latitude === 'number' && 
+    typeof site.longitude === 'number' && 
+    !isNaN(site.latitude) && 
+    !isNaN(site.longitude)
+  );
+  
   const groups = [];
   const visited = new Set();
 
-  for (let i = 0; i < sites.length; i++) {
+  for (let i = 0; i < validSites.length; i++) {
     if (visited.has(i)) continue;
     const group = [i];
     visited.add(i);
-    for (let j = 0; j < sites.length; j++) {
+    for (let j = 0; j < validSites.length; j++) {
       if (i !== j && !visited.has(j)) {
-        const d = calculateDistance(sites[i].latitude, sites[i].longitude, sites[j].latitude, sites[j].longitude);
+        const d = calculateDistance(validSites[i].latitude, validSites[i].longitude, validSites[j].latitude, validSites[j].longitude);
         if (d <= 100) {
           group.push(j);
           visited.add(j);
@@ -625,9 +623,15 @@ function groupSitesByGeofence(sites) {
 }
 
 const LocationMarkers = ({ locations, showSites }) => {
-  // Only consider site markers for geofence grouping
-  const siteMarkers = locations.filter(loc => loc.type === 'site' && showSites);
-  const otherMarkers = locations.filter(loc => loc.type !== 'site');
+  // Only show site markers with valid coordinates
+  const siteMarkers = locations.filter(loc => 
+    loc.type === 'site' && 
+    showSites && 
+    typeof loc.latitude === 'number' && 
+    typeof loc.longitude === 'number' && 
+    !isNaN(loc.latitude) && 
+    !isNaN(loc.longitude)
+  );
 
   // Group sites by overlapping geofence
   const groups = groupSitesByGeofence(siteMarkers);
@@ -636,9 +640,24 @@ const LocationMarkers = ({ locations, showSites }) => {
   const groupCircles = groups.map(groupIdxs => {
     if (groupIdxs.length === 1) return null; // skip singletons
     const groupSites = groupIdxs.map(idx => siteMarkers[idx]);
-    const lat = groupSites.reduce((sum, s) => sum + s.latitude, 0) / groupSites.length;
-    const lng = groupSites.reduce((sum, s) => sum + s.longitude, 0) / groupSites.length;
-    const maxDist = Math.max(...groupSites.map(s => calculateDistance(lat, lng, s.latitude, s.longitude)));
+    
+    // Validate all sites in group have valid coordinates
+    const validGroupSites = groupSites.filter(s => 
+      typeof s.latitude === 'number' && 
+      typeof s.longitude === 'number' && 
+      !isNaN(s.latitude) && 
+      !isNaN(s.longitude)
+    );
+    
+    if (validGroupSites.length === 0) return null;
+    
+    const lat = validGroupSites.reduce((sum, s) => sum + s.latitude, 0) / validGroupSites.length;
+    const lng = validGroupSites.reduce((sum, s) => sum + s.longitude, 0) / validGroupSites.length;
+    
+    // Check if centroid calculation resulted in valid coordinates
+    if (isNaN(lat) || isNaN(lng)) return null;
+    
+    const maxDist = Math.max(...validGroupSites.map(s => calculateDistance(lat, lng, s.latitude, s.longitude)));
     return {
       center: [lat, lng],
       radius: maxDist * 1000 + 50000, // meters: maxDist (km) + 50km
@@ -699,7 +718,7 @@ const LocationMarkers = ({ locations, showSites }) => {
                   fontWeight: 'bold'
                 }}>
                   <IoLocationSharp size={20} color="#2d98da" />
-                  <span>Site</span>
+                  <span>{site.source === 'hp' ? 'HP Site' : 'CoreBridge Site'}</span>
                 </div>
                 <div>
                   <strong>{site.name}</strong>
@@ -724,53 +743,11 @@ const LocationMarkers = ({ locations, showSites }) => {
           </Marker>
         </React.Fragment>
       ))}
-      {/* Draw other markers (emergency contacts, etc) */}
-      {otherMarkers.map(location => (
-        <Marker
-          key={location.id}
-          position={[location.latitude, location.longitude]}
-          icon={emergencyIcon}
-        >
-          <Popup>
-            <div style={{ minWidth: '200px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '8px',
-                fontSize: '16px',
-                fontWeight: 'bold'
-              }}>
-                <MdLocalHospital size={20} color="#e74c3c" />
-                <span>Emergency Contact</span>
-              </div>
-              <div>
-                <strong>{location.name}</strong>
-                {location.address && (
-                  <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
-                    📍 {location.address}
-                  </div>
-                )}
-                {location.phone && (
-                  <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                    📞 {location.phone}
-                  </div>
-                )}
-                {location.email && (
-                  <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                    📧 {location.email}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
     </>
   );
 };
 
-const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }) => {
+const MapView = ({ alerts, focusMarker, sites = [] }) => {
   const mapRef = useRef(null);
   const [showSites, setShowSites] = useState(true);
   
@@ -780,8 +757,8 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
     typeof alert.coordinates.lng === "number"
   );
 
-  // Use allLocations if provided, otherwise combine sites and emergencyContacts
-  const locationsToShow = allLocations || [...(sites || []), ...(emergencyContacts || [])];
+  // Use sites for locations
+  const locationsToShow = sites || [];
   
   // Count only site locations for the toggle counter
   const siteCount = locationsToShow.filter(location => location.type === 'site').length;
@@ -839,28 +816,6 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
           </div>
         </label>
       </div>
-      
-      {/* Enhanced counter with animation toggle */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        backgroundColor: 'rgba(12, 45, 92, 0.95)',
-        color: 'white',
-        padding: '0.8rem',
-        borderRadius: '8px',
-        fontSize: '0.85rem',
-        zIndex: 401,
-        border: '2px solid #4CAF50',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-      }}>
-        🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
-        <br />
-        🏢 <strong>{locationsToShow.length}</strong> locations shown
-        <br />
-        
-      </div>
 
       <MapContainer
         center={mapCenter}
@@ -897,6 +852,34 @@ const MapView = ({ alerts, focusMarker, sites, emergencyContacts, allLocations }
           />
         )}
       </MapContainer>
+      
+      {/* Enhanced counter with animation toggle */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        backgroundColor: 'rgba(12, 45, 92, 0.95)',
+        color: 'white',
+        padding: '0.8rem',
+        borderRadius: '8px',
+        fontSize: '0.85rem',
+        zIndex: 401,
+        border: '2px solid #4CAF50',
+        backdropFilter: 'blur(10px)',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+      }}>
+        🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
+        <br />
+        🏢 <strong>{locationsToShow.length}</strong> sites shown
+        <br />
+        {/* Add breakdown by source */}
+        {locationsToShow.length > 0 && (
+          <div style={{ fontSize: '0.75rem', marginTop: '4px', opacity: 0.8 }}>
+            HP: {locationsToShow.filter(s => s.source === 'hp').length} | 
+            CB: {locationsToShow.filter(s => s.source === 'corebridge').length}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
