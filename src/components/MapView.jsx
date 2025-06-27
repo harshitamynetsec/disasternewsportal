@@ -4,7 +4,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import './css/MapView.css';
-import { MdOutlineHouseSiding, MdOutlineFlood, MdOutlineLocalFireDepartment, MdOutlineStorm, MdOutlineTsunami, MdOutlineWarning, MdOutlineReportProblem } from 'react-icons/md';
+import { MdOutlineHouseSiding, MdOutlineFlood, MdOutlineLocalFireDepartment, MdOutlineStorm, MdOutlineTsunami, MdOutlineWarning, MdOutlineReportProblem, MdBusiness } from 'react-icons/md';
 import { FaMountain, FaWind, FaRegSun } from 'react-icons/fa';
 import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/wi';
 import { GiCactus, GiPoliceBadge, GiVolcano, GiDesert } from 'react-icons/gi';
@@ -54,6 +54,98 @@ const buildingIcon = new L.DivIcon({
         pointer-events: none;
         opacity: 0.5;
         animation: siteBuildingPulse 2.2s infinite alternate;
+      "></div>
+    </div>
+  `,
+  className: '',
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -38]
+});
+
+// HP Site Icon (Blue theme)
+const hpSiteIcon = new L.DivIcon({
+  html: `
+    <div style="
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(30, 60, 150, 0.18);
+      box-shadow: 0 0 8px 3px #2d98da66, 0 2px 6px #00c3ff88, 0 0 0 3px #2d98da22;
+      border: 2.5px solid #2d98da;
+      position: relative;
+      z-index: 2;
+      animation: siteBuildingGlow 2.2s infinite alternate;
+      backdrop-filter: blur(2px) saturate(1.2);
+    ">
+      <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='currentColor' viewBox='0 0 24 24' style="display:block; color: #fff; filter: drop-shadow(0 0 4px #00eaff99);">
+        <defs>
+          <radialGradient id='hp-site-glow' cx='50%' cy='50%' r='60%'>
+            <stop offset='0%' stop-color='#aeefff' stop-opacity='1'/>
+            <stop offset='80%' stop-color='#2d98da' stop-opacity='0.5'/>
+            <stop offset='100%' stop-color='#2d98da' stop-opacity='0.12'/>
+          </radialGradient>
+        </defs>
+        <circle cx='12' cy='12' r='11' fill='url(#hp-site-glow)' opacity='0.6'/>
+        <path d='M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z' fill='#fff' stroke='#2d98da' stroke-width='0.7'/>
+      </svg>
+      <div style="
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 50%;
+        box-shadow: 0 0 16px 4px #00eaff33, 0 0 6px 2px #2d98da55;
+        pointer-events: none;
+        opacity: 0.5;
+        animation: siteBuildingPulse 2.2s infinite alternate;
+      "></div>
+    </div>
+  `,
+  className: '',
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [0, -38]
+});
+
+// CoreBridge Site Icon (Orange theme)
+const corebridgeSiteIcon = new L.DivIcon({
+  html: `
+    <div style="
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 140, 0, 0.18);
+      box-shadow: 0 0 8px 3px #ff8c0066, 0 2px 6px #ffa50088, 0 0 0 3px #ff8c0022;
+      border: 2.5px solid #ff8c00;
+      position: relative;
+      z-index: 2;
+      animation: corebridgeBuildingGlow 2.2s infinite alternate;
+      backdrop-filter: blur(2px) saturate(1.2);
+    ">
+      <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='currentColor' viewBox='0 0 24 24' style="display:block; color: #fff; filter: drop-shadow(0 0 4px #ffa50099);">
+        <defs>
+          <radialGradient id='cb-site-glow' cx='50%' cy='50%' r='60%'>
+            <stop offset='0%' stop-color='#ffcc99' stop-opacity='1'/>
+            <stop offset='80%' stop-color='#ff8c00' stop-opacity='0.5'/>
+            <stop offset='100%' stop-color='#ff8c00' stop-opacity='0.12'/>
+          </radialGradient>
+        </defs>
+        <circle cx='12' cy='12' r='11' fill='url(#cb-site-glow)' opacity='0.6'/>
+        <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' fill='#fff' stroke='#ff8c00' stroke-width='0.7'/>
+      </svg>
+      <div style="
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        border-radius: 50%;
+        box-shadow: 0 0 16px 4px #ffa50033, 0 0 6px 2px #ff8c0055;
+        pointer-events: none;
+        opacity: 0.5;
+        animation: corebridgeBuildingPulse 2.2s infinite alternate;
       "></div>
     </div>
   `,
@@ -477,6 +569,60 @@ const AnimationStyles = () => (
       0% { opacity: 0.5; transform: scale(1); }
       100% { opacity: 0.7; transform: scale(1.09); }
     }
+
+    /* CoreBridge building animations */
+    @keyframes corebridgeBuildingGlow {
+      0% { box-shadow: 0 0 6px 2px #ffa50066, 0 0 12px 4px #ff8c0033, 0 2px 8px #0005; }
+      100% { box-shadow: 0 0 16px 6px #ffa50088, 0 0 20px 8px #ff8c0055, 0 4px 16px #0007; }
+    }
+
+    @keyframes corebridgeBuildingPulse {
+      0% { opacity: 0.5; transform: scale(1); }
+      100% { opacity: 0.7; transform: scale(1.09); }
+    }
+
+    /* Enhanced site toggle styles */
+    .site-toggles-container {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 401;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .individual-toggle {
+      background: rgba(12, 45, 92, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 18px 12px;
+      border: 2px solid #2d98da;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      animation: buttonGlow 3s ease-in-out infinite;
+      transition: all 0.3s ease;
+    }
+
+    .individual-toggle.corebridge {
+      border-color: #ff8c00;
+      animation: corebridgeButtonGlow 3s ease-in-out infinite;
+    }
+
+    .individual-toggle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(45, 152, 218, 0.4);
+    }
+
+    .individual-toggle.corebridge:hover {
+      box-shadow: 0 12px 35px rgba(255, 140, 0, 0.4);
+    }
+
+    @keyframes corebridgeButtonGlow {
+      0% { box-shadow: 0 0 5px rgba(255, 140, 0, 0.3), 0 0 10px rgba(255, 140, 0, 0.2); }
+      50% { box-shadow: 0 0 15px rgba(255, 140, 0, 0.6), 0 0 25px rgba(255, 140, 0, 0.4); }
+      100% { box-shadow: 0 0 5px rgba(255, 140, 0, 0.3), 0 0 10px rgba(255, 140, 0, 0.2); }
+    }
   `}</style>
 );
 
@@ -622,26 +768,37 @@ function groupSitesByGeofence(sites) {
   return groups;
 }
 
-const LocationMarkers = ({ locations, showSites }) => {
-  // Only show site markers with valid coordinates
-  const siteMarkers = locations.filter(loc => 
+const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
+  // Filter sites based on toggle states
+  const hpSites = locations.filter(loc => 
     loc.type === 'site' && 
-    showSites && 
+    loc.source === 'hp' &&
+    showHpSites && 
     typeof loc.latitude === 'number' && 
     typeof loc.longitude === 'number' && 
     !isNaN(loc.latitude) && 
     !isNaN(loc.longitude)
   );
 
-  // Group sites by overlapping geofence
-  const groups = groupSitesByGeofence(siteMarkers);
+  const corebridgeSites = locations.filter(loc => 
+    loc.type === 'site' && 
+    loc.source === 'corebridge' &&
+    showCorebridgeSites && 
+    typeof loc.latitude === 'number' && 
+    typeof loc.longitude === 'number' && 
+    !isNaN(loc.latitude) && 
+    !isNaN(loc.longitude)
+  );
 
-  // For each group, calculate centroid and max distance
+  const allVisibleSites = [...hpSites, ...corebridgeSites];
+
+  // Group sites by overlapping geofence (same logic as before)
+  const groups = groupSitesByGeofence(allVisibleSites);
+
   const groupCircles = groups.map(groupIdxs => {
-    if (groupIdxs.length === 1) return null; // skip singletons
-    const groupSites = groupIdxs.map(idx => siteMarkers[idx]);
+    if (groupIdxs.length === 1) return null;
+    const groupSites = groupIdxs.map(idx => allVisibleSites[idx]);
     
-    // Validate all sites in group have valid coordinates
     const validGroupSites = groupSites.filter(s => 
       typeof s.latitude === 'number' && 
       typeof s.longitude === 'number' && 
@@ -654,18 +811,16 @@ const LocationMarkers = ({ locations, showSites }) => {
     const lat = validGroupSites.reduce((sum, s) => sum + s.latitude, 0) / validGroupSites.length;
     const lng = validGroupSites.reduce((sum, s) => sum + s.longitude, 0) / validGroupSites.length;
     
-    // Check if centroid calculation resulted in valid coordinates
     if (isNaN(lat) || isNaN(lng)) return null;
     
     const maxDist = Math.max(...validGroupSites.map(s => calculateDistance(lat, lng, s.latitude, s.longitude)));
     return {
       center: [lat, lng],
-      radius: maxDist * 1000 + 50000, // meters: maxDist (km) + 50km
+      radius: maxDist * 1000 + 50000,
       members: groupIdxs
     };
   }).filter(Boolean);
 
-  // Markers in a group
   const groupedMarkerIdxs = new Set(groupCircles.flatMap(g => g.members));
 
   return (
@@ -686,70 +841,136 @@ const LocationMarkers = ({ locations, showSites }) => {
           }}
         />
       ))}
-      {/* Draw site markers and individual geofence for ungrouped */}
-      {siteMarkers.map((site, idx) => (
-        <React.Fragment key={site.id}>
-          {!groupedMarkerIdxs.has(idx) && (
-            <Circle
-              center={[site.latitude, site.longitude]}
-              radius={50000}
-              pathOptions={{
-                color: '#ffff00',
-                weight: 2,
-                opacity: 0.5,
-                fillColor: '#ffff00',
-                fillOpacity: 0.09,
-                className: 'neon-ring'
-              }}
-            />
-          )}
-          <Marker
-            position={[site.latitude, site.longitude]}
-            icon={buildingIcon}
-          >
-            <Popup>
-              <div style={{ minWidth: '200px' }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginBottom: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}>
-                  <IoLocationSharp size={20} color="#2d98da" />
-                  <span>{site.source === 'hp' ? 'HP Site' : 'CoreBridge Site'}</span>
+      
+      {/* HP Site markers */}
+      {hpSites.map((site, idx) => {
+        const originalIdx = allVisibleSites.findIndex(s => s.id === site.id);
+        return (
+          <React.Fragment key={`hp-${site.id}`}>
+            {!groupedMarkerIdxs.has(originalIdx) && (
+              <Circle
+                center={[site.latitude, site.longitude]}
+                radius={50000}
+                pathOptions={{
+                  color: '#ffff00',
+                  weight: 2,
+                  opacity: 0.5,
+                  fillColor: '#ffff00',
+                  fillOpacity: 0.09,
+                  className: 'neon-ring'
+                }}
+              />
+            )}
+            <Marker
+              position={[site.latitude, site.longitude]}
+              icon={hpSiteIcon}
+            >
+              <Popup>
+                <div style={{ minWidth: '200px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                  }}>
+                    <IoLocationSharp size={20} color="#2d98da" />
+                    <span>HP Site</span>
+                  </div>
+                  <div>
+                    <strong>{site.name}</strong>
+                    {site.address && (
+                      <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                        📍 {site.address}
+                      </div>
+                    )}
+                    {site.phone && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📞 {site.phone}
+                      </div>
+                    )}
+                    {site.email && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📧 {site.email}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <strong>{site.name}</strong>
-                  {site.address && (
-                    <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
-                      📍 {site.address}
-                    </div>
-                  )}
-                  {site.phone && (
-                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                      📞 {site.phone}
-                    </div>
-                  )}
-                  {site.email && (
-                    <div style={{ marginTop: '4px', fontSize: '14px' }}>
-                      📧 {site.email}
-                    </div>
-                  )}
+              </Popup>
+            </Marker>
+          </React.Fragment>
+        );
+      })}
+
+      {/* CoreBridge Site markers */}
+      {corebridgeSites.map((site, idx) => {
+        const originalIdx = allVisibleSites.findIndex(s => s.id === site.id);
+        return (
+          <React.Fragment key={`cb-${site.id}`}>
+            {!groupedMarkerIdxs.has(originalIdx) && (
+              <Circle
+                center={[site.latitude, site.longitude]}
+                radius={50000}
+                pathOptions={{
+                  color: '#ffff00',
+                  weight: 2,
+                  opacity: 0.5,
+                  fillColor: '#ffff00',
+                  fillOpacity: 0.09,
+                  className: 'neon-ring'
+                }}
+              />
+            )}
+            <Marker
+              position={[site.latitude, site.longitude]}
+              icon={corebridgeSiteIcon}
+            >
+              <Popup>
+                <div style={{ minWidth: '200px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                  }}>
+                    <MdBusiness size={20} color="#ff8c00" />
+                    <span>CoreBridge Site</span>
+                  </div>
+                  <div>
+                    <strong>{site.name}</strong>
+                    {site.address && (
+                      <div style={{ marginTop: '4px', fontSize: '14px', color: '#666' }}>
+                        📍 {site.address}
+                      </div>
+                    )}
+                    {site.phone && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📞 {site.phone}
+                      </div>
+                    )}
+                    {site.email && (
+                      <div style={{ marginTop: '4px', fontSize: '14px' }}>
+                        📧 {site.email}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        </React.Fragment>
-      ))}
+              </Popup>
+            </Marker>
+          </React.Fragment>
+        );
+      })}
     </>
   );
 };
 
 const MapView = ({ alerts, focusMarker, sites = [] }) => {
   const mapRef = useRef(null);
-  const [showSites, setShowSites] = useState(true);
+  const [showHpSites, setShowHpSites] = useState(true);
+  const [showCorebridgeSites, setShowCorebridgeSites] = useState(true);
   
   const validAlerts = alerts.filter(alert =>
     alert.coordinates &&
@@ -760,8 +981,9 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
   // Use sites for locations
   const locationsToShow = sites || [];
   
-  // Count only site locations for the toggle counter
-  const siteCount = locationsToShow.filter(location => location.type === 'site').length;
+  // Count sites by source
+  const hpSiteCount = locationsToShow.filter(location => location.type === 'site' && location.source === 'hp').length;
+  const corebridgeSiteCount = locationsToShow.filter(location => location.type === 'site' && location.source === 'corebridge').length;
 
   const getMapCenter = () => {
     if (validAlerts.length === 0) return [20.5937, 78.9629]; // India center
@@ -798,23 +1020,45 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
     <div className="map-section" style={{ position: 'relative' }}>
       <AnimationStyles />
       
-      {/* Site Toggle Button */}
-      <div className="site-toggle-container site-toggle-bottom-left">
-        <label className="toggle-label" onClick={() => setShowSites(!showSites)}>
-          <div className="toggle-icon">
-            <IoLocationSharp />
-          </div>
-          <div className={`toggle-switch ${showSites ? 'active' : ''}`}>
-            <div className={`toggle-slider ${showSites ? 'active' : ''}`}></div>
-          </div>
-          <div className="toggle-text">
-            {showSites ? 'Sites ON' : 'Sites OFF'}
-            <br />
-            <span style={{ fontSize: '9px', opacity: 0.7 }}>
-              ({siteCount} sites)
-            </span>
-          </div>
-        </label>
+      {/* Dual Site Toggle Buttons */}
+      <div className="site-toggles-container">
+        {/* HP Sites Toggle */}
+        <div className="individual-toggle">
+          <label className="toggle-label" onClick={() => setShowHpSites(!showHpSites)}>
+            <div className="toggle-icon">
+              <IoLocationSharp />
+            </div>
+            <div className={`toggle-switch ${showHpSites ? 'active' : ''}`}>
+              <div className={`toggle-slider ${showHpSites ? 'active' : ''}`}></div>
+            </div>
+            <div className="toggle-text">
+              {showHpSites ? 'HP ON' : 'HP OFF'}
+              <br />
+              <span style={{ fontSize: '9px', opacity: 0.7 }}>
+                ({hpSiteCount} sites)
+              </span>
+            </div>
+          </label>
+        </div>
+
+        {/* CoreBridge Sites Toggle */}
+        <div className="individual-toggle corebridge">
+          <label className="toggle-label" onClick={() => setShowCorebridgeSites(!showCorebridgeSites)}>
+            <div className="toggle-icon">
+              <MdBusiness />
+            </div>
+            <div className={`toggle-switch ${showCorebridgeSites ? 'active' : ''}`}>
+              <div className={`toggle-slider ${showCorebridgeSites ? 'active' : ''}`}></div>
+            </div>
+            <div className="toggle-text">
+              {showCorebridgeSites ? 'CB ON' : 'CB OFF'}
+              <br />
+              <span style={{ fontSize: '9px', opacity: 0.7 }}>
+                ({corebridgeSiteCount} sites)
+              </span>
+            </div>
+          </label>
+        </div>
       </div>
 
       <MapContainer
@@ -842,7 +1086,7 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
         </MarkerClusterGroup>
         
         {/* Render location markers (sites and emergency contacts) with neon rings */}
-        <LocationMarkers locations={locationsToShow} showSites={showSites} />
+        <LocationMarkers locations={locationsToShow} showHpSites={showHpSites} showCorebridgeSites={showCorebridgeSites} />
         
         {/* Add MapFocus component */}
         {focusPosition && (
@@ -870,15 +1114,16 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
       }}>
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
         <br />
-        🏢 <strong>{locationsToShow.length}</strong> sites shown
+        🏢 <strong>{(showHpSites ? hpSiteCount : 0) + (showCorebridgeSites ? corebridgeSiteCount : 0)}</strong> sites shown
         <br />
-        {/* Add breakdown by source */}
-        {locationsToShow.length > 0 && (
-          <div style={{ fontSize: '0.75rem', marginTop: '4px', opacity: 0.8 }}>
-            HP: {locationsToShow.filter(s => s.source === 'hp').length} | 
-            CB: {locationsToShow.filter(s => s.source === 'corebridge').length}
-          </div>
-        )}
+        <div style={{ fontSize: '0.75rem', marginTop: '4px', opacity: 0.8 }}>
+          <span style={{ color: showHpSites ? '#00c3ff' : '#666' }}>
+            HP: {showHpSites ? hpSiteCount : 0}
+          </span> | 
+          <span style={{ color: showCorebridgeSites ? '#ffa500' : '#666' }}>
+            CB: {showCorebridgeSites ? corebridgeSiteCount : 0}
+          </span>
+        </div>
       </div>
     </div>
   );
