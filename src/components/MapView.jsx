@@ -1025,8 +1025,19 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
         {/* HP Sites Toggle */}
         <div className="individual-toggle">
           <label className="toggle-label" onClick={() => setShowHpSites(!showHpSites)}>
-            <div className="toggle-icon">
-              <IoLocationSharp />
+            <div className="toggle-icon" style={{ width: 28, height: 28 }}>
+              {/* HP Site SVG */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" style={{ display: 'block', color: '#fff', filter: 'drop-shadow(0 0 4px #00eaff99)' }}>
+                <defs>
+                  <radialGradient id="hp-site-glow-toggle" cx="50%" cy="50%" r="60%">
+                    <stop offset="0%" stopColor="#aeefff" stopOpacity="1"/>
+                    <stop offset="80%" stopColor="#2d98da" stopOpacity="0.5"/>
+                    <stop offset="100%" stopColor="#2d98da" stopOpacity="0.12"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="12" cy="12" r="11" fill="url(#hp-site-glow-toggle)" opacity="0.6"/>
+                <path d="M3 22v-18l9-4 9 4v18h-6v-6h-6v6h-6zm2-2h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm4 12h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2zm0-4h2v-2h-2v2z" fill="#fff" stroke="#2d98da" strokeWidth="0.7"/>
+              </svg>
             </div>
             <div className={`toggle-switch ${showHpSites ? 'active' : ''}`}>
               <div className={`toggle-slider ${showHpSites ? 'active' : ''}`}></div>
@@ -1044,8 +1055,19 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
         {/* CoreBridge Sites Toggle */}
         <div className="individual-toggle corebridge">
           <label className="toggle-label" onClick={() => setShowCorebridgeSites(!showCorebridgeSites)}>
-            <div className="toggle-icon">
-              <MdBusiness />
+            <div className="toggle-icon" style={{ width: 28, height: 28 }}>
+              {/* CoreBridge Site SVG */}
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" style={{ display: 'block', color: '#fff', filter: 'drop-shadow(0 0 4px #ffa50099)' }}>
+                <defs>
+                  <radialGradient id="cb-site-glow-toggle" cx="50%" cy="50%" r="60%">
+                    <stop offset="0%" stopColor="#ffcc99" stopOpacity="1"/>
+                    <stop offset="80%" stopColor="#ff8c00" stopOpacity="0.5"/>
+                    <stop offset="100%" stopColor="#ff8c00" stopOpacity="0.12"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="12" cy="12" r="11" fill="url(#cb-site-glow-toggle)" opacity="0.6"/>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#fff" stroke="#ff8c00" strokeWidth="0.7"/>
+              </svg>
             </div>
             <div className={`toggle-switch ${showCorebridgeSites ? 'active' : ''}`}>
               <div className={`toggle-slider ${showCorebridgeSites ? 'active' : ''}`}></div>
