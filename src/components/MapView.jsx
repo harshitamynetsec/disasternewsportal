@@ -1135,17 +1135,6 @@ const MapView = ({ alerts, focusMarker, sites = [] }) => {
         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
       }}>
         🎯 <strong>{validAlerts.length}/{alerts.length}</strong> alerts mapped
-        <br />
-        🏢 <strong>{(showHpSites ? hpSiteCount : 0) + (showCorebridgeSites ? corebridgeSiteCount : 0)}</strong> sites shown
-        <br />
-        <div style={{ fontSize: '0.75rem', marginTop: '4px', opacity: 0.8 }}>
-          <span style={{ color: showHpSites ? '#00c3ff' : '#666' }}>
-            HP: {showHpSites ? hpSiteCount : 0}
-          </span> | 
-          <span style={{ color: showCorebridgeSites ? '#ffa500' : '#666' }}>
-            CB: {showCorebridgeSites ? corebridgeSiteCount : 0}
-          </span>
-        </div>
       </div>
     </div>
   );
