@@ -7,7 +7,8 @@ import './css/MapView.css';
 import { MdOutlineHouseSiding, MdOutlineFlood, MdOutlineLocalFireDepartment, MdOutlineStorm, MdOutlineTsunami, MdOutlineWarning, MdOutlineReportProblem, MdBusiness } from 'react-icons/md';
 import { FaMountain, FaWind, FaRegSun } from 'react-icons/fa';
 import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/wi';
-import { GiCactus, GiPoliceBadge, GiVolcano, GiDesert } from 'react-icons/gi';
+import { GiCactus, GiPoliceBadge } from 'react-icons/gi';
+import { GiVolcano, GiDesert } from 'react-icons/gi';
 import { IoLocationSharp } from 'react-icons/io5';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -100,52 +101,6 @@ const hpSiteIcon = new L.DivIcon({
         pointer-events: none;
         opacity: 0.5;
         animation: siteBuildingPulse 2.2s infinite alternate;
-      "></div>
-    </div>
-  `,
-  className: '',
-  iconSize: [38, 38],
-  iconAnchor: [19, 38],
-  popupAnchor: [0, -38]
-});
-
-// CoreBridge Site Icon (Orange theme)
-const corebridgeSiteIcon = new L.DivIcon({
-  html: `
-    <div style="
-      width: 38px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: rgba(255, 140, 0, 0.18);
-      box-shadow: 0 0 8px 3px #ff8c0066, 0 2px 6px #ffa50088, 0 0 0 3px #ff8c0022;
-      border: 2.5px solid #ff8c00;
-      position: relative;
-      z-index: 2;
-      animation: corebridgeBuildingGlow 2.2s infinite alternate;
-      backdrop-filter: blur(2px) saturate(1.2);
-    ">
-      <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='currentColor' viewBox='0 0 24 24' style="display:block; color: #fff; filter: drop-shadow(0 0 4px #ffa50099);">
-        <defs>
-          <radialGradient id='cb-site-glow' cx='50%' cy='50%' r='60%'>
-            <stop offset='0%' stop-color='#ffcc99' stop-opacity='1'/>
-            <stop offset='80%' stop-color='#ff8c00' stop-opacity='0.5'/>
-            <stop offset='100%' stop-color='#ff8c00' stop-opacity='0.12'/>
-          </radialGradient>
-        </defs>
-        <circle cx='12' cy='12' r='11' fill='url(#cb-site-glow)' opacity='0.6'/>
-        <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' fill='#fff' stroke='#ff8c00' stroke-width='0.7'/>
-      </svg>
-      <div style="
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        border-radius: 50%;
-        box-shadow: 0 0 16px 4px #ffa50033, 0 0 6px 2px #ff8c0055;
-        pointer-events: none;
-        opacity: 0.5;
-        animation: corebridgeBuildingPulse 2.2s infinite alternate;
       "></div>
     </div>
   `,
@@ -570,17 +525,6 @@ const AnimationStyles = () => (
       100% { opacity: 0.7; transform: scale(1.09); }
     }
 
-    /* CoreBridge building animations */
-    @keyframes corebridgeBuildingGlow {
-      0% { box-shadow: 0 0 6px 2px #ffa50066, 0 0 12px 4px #ff8c0033, 0 2px 8px #0005; }
-      100% { box-shadow: 0 0 16px 6px #ffa50088, 0 0 20px 8px #ff8c0055, 0 4px 16px #0007; }
-    }
-
-    @keyframes corebridgeBuildingPulse {
-      0% { opacity: 0.5; transform: scale(1); }
-      100% { opacity: 0.7; transform: scale(1.09); }
-    }
-
     /* Enhanced site toggle styles */
     .site-toggles-container {
       position: absolute;
@@ -604,24 +548,9 @@ const AnimationStyles = () => (
       transition: all 0.3s ease;
     }
 
-    .individual-toggle.corebridge {
-      border-color: #ff8c00;
-      animation: corebridgeButtonGlow 3s ease-in-out infinite;
-    }
-
     .individual-toggle:hover {
       transform: scale(1.05);
       box-shadow: 0 12px 35px rgba(45, 152, 218, 0.4);
-    }
-
-    .individual-toggle.corebridge:hover {
-      box-shadow: 0 12px 35px rgba(255, 140, 0, 0.4);
-    }
-
-    @keyframes corebridgeButtonGlow {
-      0% { box-shadow: 0 0 5px rgba(255, 140, 0, 0.3), 0 0 10px rgba(255, 140, 0, 0.2); }
-      50% { box-shadow: 0 0 15px rgba(255, 140, 0, 0.6), 0 0 25px rgba(255, 140, 0, 0.4); }
-      100% { box-shadow: 0 0 5px rgba(255, 140, 0, 0.3), 0 0 10px rgba(255, 140, 0, 0.2); }
     }
   `}</style>
 );
@@ -924,7 +853,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
             )}
             <Marker
               position={[site.latitude, site.longitude]}
-              icon={corebridgeSiteIcon}
+              icon={hpSiteIcon}
             >
               <Popup>
                 <div style={{ minWidth: '200px' }}>
@@ -936,8 +865,8 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
                     fontSize: '16px',
                     fontWeight: 'bold'
                   }}>
-                    <MdBusiness size={20} color="#ff8c00" />
-                    <span>CoreBridge Site</span>
+                    <MdBusiness size={20} color="#2d98da" />
+                    <span>HP Site</span>
                   </div>
                   <div>
                     <strong>{site.name}</strong>
