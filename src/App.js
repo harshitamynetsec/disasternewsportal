@@ -11,6 +11,9 @@ import useNotifications from "./hooks/useNotifications";
 import useAlertData from "./hooks/useAlertData";
 import DisasterAnalysis from "./components/DisasterAnalysis";
 import useSites from "./hooks/useSites";
+import SlidingTogglePanel from './components/SlidingTogglePanel';
+import './components/css/SlidingTogglePanel.css';
+
 import "./App.css";
 
 function App() {
@@ -20,6 +23,8 @@ function App() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [focusedAlert, setFocusedAlert] = useState(null);
+  const [showHpSites, setShowHpSites] = useState(true);
+  const [showCorebridgeSites, setShowCorebridgeSites] = useState(true);
 
   // Get sites data from the useSites hook (only hp-sites route)
   const { 
@@ -130,6 +135,9 @@ function App() {
   // Handler to toggle the analysis panel
   const toggleAnalysis = () => setIsAnalysisOpen(!isAnalysisOpen);
 
+  const hpSiteCount = sites.filter(location => location.type === 'site' && location.source === 'hp').length;
+  const corebridgeSiteCount = sites.filter(location => location.type === 'site' && location.source === 'corebridge').length;
+
   return (
     <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
       {/* Sequential Notification System */}
@@ -202,6 +210,8 @@ function App() {
           alerts={alertsWithCoordinates} 
           focusMarker={focusedAlert}
           sites={sites}
+          showHpSites={showHpSites}
+          showCorebridgeSites={showCorebridgeSites}
         />
         <div 
           className="scroll-indicator"
@@ -277,6 +287,15 @@ function App() {
           <p>Last Sites Fetch: {sitesLastFetchTime?.toLocaleString()}</p>
         </div>
       )}
+
+      <SlidingTogglePanel
+        showHpSites={showHpSites}
+        setShowHpSites={setShowHpSites}
+        showCorebridgeSites={showCorebridgeSites}
+        setShowCorebridgeSites={setShowCorebridgeSites}
+        hpSiteCount={hpSiteCount}
+        corebridgeSiteCount={corebridgeSiteCount}
+      />
     </div>
   );
 }
