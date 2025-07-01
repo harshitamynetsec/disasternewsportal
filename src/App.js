@@ -13,6 +13,7 @@ import DisasterAnalysis from "./components/DisasterAnalysis";
 import useSites from "./hooks/useSites";
 import SlidingTogglePanel from './components/SlidingTogglePanel';
 import './components/css/SlidingTogglePanel.css';
+import NSSLogo from './NSS-LOGO.png';
 
 import "./App.css";
 
@@ -171,7 +172,10 @@ function App() {
         height: "3rem",
         padding: "0 1rem"
       }}>
-        <h1 className="app-title">🌐 NSS Alert Portal</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+          <img src={NSSLogo} alt="NKT Monitoring Logo" style={{ height: '2.4rem', width: '2.4rem', borderRadius: '0.4rem', background: '#fff' }} />
+          <h1 className="app-title" style={{ margin: 0, fontSize: '2.1rem', fontWeight: 700, background: 'linear-gradient(90deg,#b6e0fe,#fbc2eb 80%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '1px' }}>NKT MONITORING</h1>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <button onClick={toggleMenu} className="hamburger-btn">☰</button>
           {isMobile && (
