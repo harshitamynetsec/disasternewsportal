@@ -1,17 +1,20 @@
 /* SlidingTogglePanel.css */
 .sliding-toggle-panel {
     position: fixed;
-    bottom: 20px;
+    bottom: 0;
     right: 20px;
     z-index: 1000;
     width: 220px;
     max-width: 95vw;
     box-shadow: 0 4px 16px 2px #2228;
-    border-radius: 14px 14px 12px 12px;
+    border-radius: 14px 14px 0 0;
     background: transparent;
     transition: transform 0.45s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
     transform: translateY(calc(100% - 54px));
     overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .sliding-toggle-panel.expanded {
@@ -20,32 +23,32 @@
 }
 
 .panel-toggle-btn {
-    position: absolute;
-    top: -44px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    left: 0;
+    top: 0;
+    transform: none;
+    margin-bottom: 0;
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     border: 2px solid #4a90e2;
-    border-radius: 18px 18px 0 0;
-    padding: 7px 22px 7px 14px;
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 2px 12px 2px #4a90e2aa;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 -2px 8px 1px #4a90e2aa;
-    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    padding: 8px 24px;
     min-width: 80px;
     font-size: 1em;
     font-weight: 700;
     letter-spacing: 0.5px;
     z-index: 10;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
-.panel-toggle-btn:hover {
+.panel-toggle-btn:hover, .panel-toggle-btn:focus {
+    box-shadow: 0 4px 24px 4px #4a90e2cc;
     background: linear-gradient(135deg, #2a5298 0%, #3a62b8 100%);
-    box-shadow: 0 -4px 16px 2px #4a90e2cc;
-    transform: translateX(-50%) translateY(-2px);
 }
 
 .toggle-arrow {
@@ -67,7 +70,7 @@
     background: #181c2a;
     border: 1.5px solid #4a90e2;
     border-radius: 12px;
-    padding: 10px 4px 8px 4px;
+    padding: 10px 4px 16px 4px;
     box-shadow: 0 2px 8px #2228;
     min-width: 180px;
     max-width: 210px;
@@ -194,46 +197,294 @@
     text-shadow: 0 2px 8px #0008;
 }
 
-/* Responsive adjustments */
+/* Tablet and smaller desktop adjustments */
+@media (max-width: 1024px) {
+    .sliding-toggle-panel {
+        right: 15px;
+        bottom: 8px;
+        width: 200px;
+        max-width: 90vw;
+    }
+    
+    .panel-content, .panel-content.show {
+        min-width: 160px;
+        max-width: 190px;
+        max-height: 200px;
+    }
+    
+    .individual-toggle {
+        max-width: 180px;
+        min-height: 44px;
+    }
+    
+    .toggle-text {
+        font-size: 12px;
+        min-width: 55px;
+    }
+}
+
+/* Medium tablets */
 @media (max-width: 768px) {
     .sliding-toggle-panel {
-      right: 6px;
-      bottom: 6px;
-      width: 98vw;
-      min-width: 0;
-      max-width: 98vw;
+        right: 10px;
+        bottom: 6px;
+        width: 180px;
+        max-width: 85vw;
     }
+    
+    .panel-toggle-btn {
+        padding: 6px 18px 6px 12px;
+        min-width: 70px;
+        font-size: 0.9em;
+    }
+    
+    .toggle-btn-text {
+        font-size: 13px;
+    }
+    
     .panel-content, .panel-content.show {
-      min-width: 90vw;
-      max-width: 98vw;
-      padding: 8px 2vw 8px 2vw;
-      max-height: 180px;
+        min-width: 140px;
+        max-width: 170px;
+        padding: 8px 3px 6px 3px;
+        max-height: 180px;
     }
+    
     .site-toggles-container {
-      gap: 8px;
+        gap: 8px;
     }
+    
     .individual-toggle {
-      padding: 6px 2px;
-      width: 98%;
-      max-width: 98vw;
-      min-height: 40px;
+        padding: 6px 4px;
+        max-width: 160px;
+        min-height: 40px;
     }
+    
     .toggle-label {
-      gap: 6px;
+        gap: 6px;
     }
+    
     .toggle-switch {
-      width: 32px;
-      height: 14px;
+        width: 34px;
+        height: 16px;
     }
+    
     .toggle-slider {
-      width: 9px;
-      height: 9px;
+        width: 10px;
+        height: 10px;
     }
+    
     .toggle-slider.active {
-      transform: translateX(13px);
+        transform: translateX(16px);
     }
+    
     .toggle-text {
-      min-width: 40px;
-      font-size: 11px;
+        font-size: 11px;
+        min-width: 45px;
+    }
+}
+
+/* Small tablets and large phones */
+@media (max-width: 600px) {
+    .sliding-toggle-panel {
+        right: 8px;
+        bottom: 5px;
+        width: 160px;
+        max-width: 80vw;
+    }
+    
+    .panel-toggle-btn {
+        padding: 5px 16px 5px 10px;
+        min-width: 65px;
+        font-size: 0.85em;
+    }
+    
+    .toggle-btn-text {
+        font-size: 12px;
+    }
+    
+    .panel-content, .panel-content.show {
+        min-width: 120px;
+        max-width: 150px;
+        padding: 6px 2px 5px 2px;
+        max-height: 160px;
+    }
+    
+    .individual-toggle {
+        padding: 5px 3px;
+        max-width: 140px;
+        min-height: 36px;
+    }
+    
+    .toggle-switch {
+        width: 30px;
+        height: 14px;
+    }
+    
+    .toggle-slider {
+        width: 9px;
+        height: 9px;
+    }
+    
+    .toggle-slider.active {
+        transform: translateX(14px);
+    }
+    
+    .toggle-text {
+        font-size: 10px;
+        min-width: 40px;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .sliding-toggle-panel {
+        right: 6px;
+        bottom: 4px;
+        width: 140px;
+        max-width: 75vw;
+    }
+    
+    .panel-toggle-btn {
+        padding: 4px 14px 4px 8px;
+        min-width: 60px;
+        font-size: 0.8em;
+    }
+    
+    .toggle-btn-text {
+        font-size: 11px;
+    }
+    
+    .panel-content, .panel-content.show {
+        min-width: 100px;
+        max-width: 130px;
+        padding: 5px 1px 4px 1px;
+        max-height: 140px;
+    }
+    
+    .site-toggles-container {
+        gap: 6px;
+    }
+    
+    .individual-toggle {
+        padding: 4px 2px;
+        max-width: 120px;
+        min-height: 32px;
+    }
+    
+    .toggle-label {
+        gap: 4px;
+    }
+    
+    .toggle-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .toggle-switch {
+        width: 28px;
+        height: 12px;
+    }
+    
+    .toggle-slider {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .toggle-slider.active {
+        transform: translateX(12px);
+    }
+    
+    .toggle-text {
+        font-size: 9px;
+        min-width: 35px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+    .sliding-toggle-panel {
+        right: 4px;
+        bottom: 3px;
+        width: 120px;
+        max-width: 70vw;
+    }
+    
+    .panel-toggle-btn {
+        padding: 3px 12px 3px 6px;
+        min-width: 55px;
+        font-size: 0.75em;
+    }
+    
+    .toggle-btn-text {
+        font-size: 10px;
+    }
+    
+    .panel-content, .panel-content.show {
+        min-width: 80px;
+        max-width: 110px;
+        padding: 4px 1px 3px 1px;
+        max-height: 120px;
+    }
+    
+    .individual-toggle {
+        padding: 3px 1px;
+        max-width: 100px;
+        min-height: 28px;
+    }
+    
+    .toggle-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .toggle-switch {
+        width: 24px;
+        height: 10px;
+    }
+    
+    .toggle-slider {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .toggle-slider.active {
+        transform: translateX(10px);
+    }
+    
+    .toggle-text {
+        font-size: 8px;
+        min-width: 30px;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sliding-toggle-panel {
+        bottom: 2px;
+        transform: translateY(calc(100% - 40px));
+    }
+    
+    .panel-toggle-btn {
+        top: -36px;
+        padding: 4px 16px 4px 10px;
+    }
+    
+    .panel-content, .panel-content.show {
+        max-height: 120px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .sliding-toggle-panel {
+        box-shadow: 0 2px 8px 1px #2228;
+    }
+    
+    .panel-toggle-btn {
+        box-shadow: 0 -1px 4px 0.5px #4a90e2aa;
+    }
+    
+    .panel-toggle-btn:hover {
+        box-shadow: 0 -2px 8px 1px #4a90e2cc;
     }
 }
