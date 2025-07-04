@@ -944,6 +944,7 @@ const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeS
       <AnimationStyles />
       
       <MapContainer
+        key={JSON.stringify(mapCenter) + zoomLevel}
         center={mapCenter}
         zoom={zoomLevel}
         minZoom={2}
@@ -954,7 +955,7 @@ const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeS
         ref={mapRef}
       >
         <TileLayer
-          url="https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}@2x.png?key=nksRfzxRXRECvvz3HFsg"
+          url="https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}@2x.png?key=kPmWPiwugT5DMGRl4liL"
         />
 
         <MarkerClusterGroup 

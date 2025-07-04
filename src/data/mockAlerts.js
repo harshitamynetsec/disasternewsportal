@@ -34,4 +34,18 @@ const mockAlerts = [
   },
 ];
 
-export default mockAlerts;
+// Add a mock alert within 50km of a site for testing
+const mockProximityAlert = {
+  title: 'TEST: Mock Disaster Near Site',
+  description: 'This is a test alert for proximity detection.',
+  coordinates: [14.5995, 120.9842], // Manila, for example
+  timestamp: new Date().toISOString(),
+  analysis: { disaster_type: 'Test' }
+};
+
+const alerts = [
+  mockProximityAlert,
+  ...mockAlerts,
+];
+
+export default alerts;

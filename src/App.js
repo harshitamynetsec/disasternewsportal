@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import MapView from "./components/MapView";
 import AlertCard from "./components/AlertCard";
 import SideMenu from "./components/SideMenu";
@@ -9,13 +9,16 @@ import NotificationIcon from "./components/NotificationIcon";
 import LoadingIndicator from "./components/LoadingIndicator";
 import useNotifications from "./hooks/useNotifications";
 import useAlertData from "./hooks/useAlertData";
-import DisasterAnalysis from "./components/DisasterAnalysis";
 import useSites from "./hooks/useSites";
 import SlidingTogglePanel from './components/SlidingTogglePanel';
 import './components/css/SlidingTogglePanel.css';
 import NSSLogo from './NSS-LOGO.png';
+import ProximityAlert from './components/ProximityAlert';
+import ProximityAlertNotification from './components/ProximityAlertNotification';
 
 import "./App.css";
+
+const DisasterAnalysis = lazy(() => import("./components/DisasterAnalysis"));
 
 function App() {
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
@@ -140,167 +143,172 @@ function App() {
   const corebridgeSiteCount = sites.filter(location => location.type === 'site' && location.source === 'corebridge').length;
 
   return (
-    <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
-      {/* Sequential Notification System */}
-      <NotificationManager 
-        notifications={notifications} 
-        onDismiss={dismissNotification}
-      />
-
-      {/* Disaster Analysis Panel */}
-      <DisasterAnalysis 
-        alerts={geocodedAlerts} 
-        isOpen={isAnalysisOpen} 
-        onClose={() => setIsAnalysisOpen(false)} 
-      />
-
-      {/* Floating Analysis Button on the left */}
-      <button 
-        onClick={toggleAnalysis} 
-        className={`analysis-float-btn${isAnalysisOpen ? ' hide' : ''}`}
-        title="Open Disaster Analysis"
-      >
-        Disaster Analysis
-      </button>
-
-      {/* Header */}
-      <div className="app-header" style={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center", 
-        marginBottom: "1rem", 
-        height: "3rem",
-        padding: "0 1rem"
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-          <img src={NSSLogo} alt="NKT Monitoring Logo" style={{ height: '2.4rem', width: '2.4rem', borderRadius: '0.4rem', background: '#fff' }} />
-          <h1 className="app-title" style={{ margin: 0, fontSize: '2.1rem', fontWeight: 700, background: 'linear-gradient(90deg,#b6e0fe,#fbc2eb 80%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '1px' }}>NKT MONITORING</h1>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button onClick={toggleMenu} className="hamburger-btn">☰</button>
-          {isMobile && (
-            <NotificationIcon 
-              notificationHistory={notificationHistory}
-              unreadCount={unreadCount}
-              onMarkAllAsRead={markAllAsRead}
-            />
-          )}
-        </div>
-        <div className="desktop-filter">
-          <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
-        </div>
-      </div>
-      
-      {/* Notification Icon for desktop (fixed position) */}
-      {!isMobile && (
-        <NotificationIcon 
-          notificationHistory={notificationHistory}
-          unreadCount={unreadCount}
-          onMarkAllAsRead={markAllAsRead}
+    <>
+      <ProximityAlertNotification />
+      <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
+        {/* Sequential Notification System */}
+        <NotificationManager 
+          notifications={notifications} 
+          onDismiss={dismissNotification}
         />
-      )}
 
-      {/* Loading Indicator */}
-      <LoadingIndicator isGeocoding={isGeocoding} geocodingProgress={geocodingProgress} />
-
-      {/* Side Menu */}
-      <SideMenu isOpen={isMenuOpen} onClose={toggleMenu}>
-        <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
-      </SideMenu>
-    
-      {/* Map */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <MapView 
-          alerts={alertsWithCoordinates} 
-          focusMarker={focusedAlert}
-          sites={sites}
-          showHpSites={showHpSites}
-          showCorebridgeSites={showCorebridgeSites}
-        />
-        <div 
-          className="scroll-indicator"
-          onClick={scrollToAlerts}
-          role="button"
-          tabIndex={0}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              scrollToAlerts();
-            }
-          }}
-        >
-          Scroll down for news
-          <span className="scroll-arrow" aria-hidden="true">↓</span>
-        </div>
-        <div className="map-footer">
-          <div>📍 Mapped: {alertsWithCoordinates.length}/{filteredAlerts.length}</div>
-          <div>🏢 Sites: {sites.length}</div>
-          <div>🌏 Countries: {[...new Set(alertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))].join(', ')}</div>
-          {Object.keys(coordinateStats).length > 0 && (
-            <div style={{ fontSize: "0.85em", opacity: 0.8 }}>
-              📌 Sources: {Object.entries(coordinateStats).map(([source, count]) => 
-                `${source}: ${count}`
-              ).join(', ')}
-            </div>
-          )}
-          {lastFetchTime && (
-            <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
-              🔄 Alerts updated: {lastFetchTime.toLocaleTimeString()}
-            </div>
-          )}
-          {sitesLastFetchTime && (
-            <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
-              🏗️ Sites updated: {sitesLastFetchTime.toLocaleTimeString()}
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Alert Cards */}
-      <div className="alert-cards">
-        {filteredAlerts.map((alert, index) => (
-          <AlertCard 
-            key={`${alert.title}-${alert.timestamp}-${index}`} 
-            alert={alert}
-            onCardClick={handleAlertCardClick}
+        {/* Disaster Analysis Panel */}
+        <Suspense fallback={<div style={{padding: '2rem', textAlign: 'center'}}>Loading analysis...</div>}>
+          <DisasterAnalysis 
+            alerts={geocodedAlerts} 
+            isOpen={isAnalysisOpen} 
+            onClose={() => setIsAnalysisOpen(false)} 
           />
-        ))}
-      </div>
+        </Suspense>
 
-      {/* Alert Statistics */}
-      {/* <AlertStats alerts={filteredAlerts} />
+        {/* Floating Analysis Button on the left */}
+        <button 
+          onClick={toggleAnalysis} 
+          className={`analysis-float-btn${isAnalysisOpen ? ' hide' : ''}`}
+          title="Open Disaster Analysis"
+        >
+          Disaster Analysis
+        </button>
 
-       <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0 16px 0' }}>
-        <button onClick={scrollToMap} className="jump-to-map-btn">Jump to Map</button>
-      </div> */}
-
-      {/* Debug Panel (Development only) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="debug-panel">
-          <h3>🛠️ Debug Info</h3>
-          <p>Total Alerts: {alerts.length}</p>
-          <p>Geocoded: {geocodedAlerts.length}</p>
-          <p>Filtered: {filteredAlerts.length}</p>
-          <p>With Coordinates: {alertsWithCoordinates.length}</p>
-          <p>Sites: {sites.length}</p>
-          <p>Sites Loading: {isLoadingSites ? 'Yes' : 'No'}</p>
-          <p>Coordinate Sources: {JSON.stringify(coordinateStats)}</p>
-          <p>Active Notifications: {notifications.length}</p>
-          <p>Notification History: {notificationHistory.length}</p>
-          <p>Unread Count: {unreadCount}</p>
-          <p>Last Alerts Fetch: {lastFetchTime?.toLocaleString()}</p>
-          <p>Last Sites Fetch: {sitesLastFetchTime?.toLocaleString()}</p>
+        {/* Header */}
+        <div className="app-header" style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          marginBottom: "1rem", 
+          height: "3rem",
+          padding: "0 1rem"
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+            <img src={NSSLogo} alt="NKT Monitoring Logo" style={{ height: '2.4rem', width: '2.4rem', borderRadius: '0.4rem', background: '#fff' }} />
+            <h1 className="app-title" style={{ margin: 0, fontSize: '2.1rem', fontWeight: 700, background: 'linear-gradient(90deg,#b6e0fe,#fbc2eb 80%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '1px' }}>NKT MONITORING</h1>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <button onClick={toggleMenu} className="hamburger-btn">☰</button>
+            {isMobile && (
+              <NotificationIcon 
+                notificationHistory={notificationHistory}
+                unreadCount={unreadCount}
+                onMarkAllAsRead={markAllAsRead}
+              />
+            )}
+          </div>
+          <div className="desktop-filter">
+            <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
+          </div>
         </div>
-      )}
+        
+        {/* Notification Icon for desktop (fixed position) */}
+        {!isMobile && (
+          <NotificationIcon 
+            notificationHistory={notificationHistory}
+            unreadCount={unreadCount}
+            onMarkAllAsRead={markAllAsRead}
+          />
+        )}
 
-      <SlidingTogglePanel
-        showHpSites={showHpSites}
-        setShowHpSites={setShowHpSites}
-        showCorebridgeSites={showCorebridgeSites}
-        setShowCorebridgeSites={setShowCorebridgeSites}
-        hpSiteCount={hpSiteCount}
-        corebridgeSiteCount={corebridgeSiteCount}
-      />
-    </div>
+        {/* Loading Indicator */}
+        <LoadingIndicator isGeocoding={isGeocoding} geocodingProgress={geocodingProgress} />
+
+        {/* Side Menu */}
+        <SideMenu isOpen={isMenuOpen} onClose={toggleMenu}>
+          <AlertFilter alerts={geocodedAlerts} onFilter={handleFilter} />
+        </SideMenu>
+      
+        {/* Map */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <MapView 
+            alerts={alertsWithCoordinates} 
+            focusMarker={focusedAlert}
+            sites={sites}
+            showHpSites={showHpSites}
+            showCorebridgeSites={showCorebridgeSites}
+          />
+          <div 
+            className="scroll-indicator"
+            onClick={scrollToAlerts}
+            role="button"
+            tabIndex={0}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                scrollToAlerts();
+              }
+            }}
+          >
+            Scroll down for news
+            <span className="scroll-arrow" aria-hidden="true">↓</span>
+          </div>
+          <div className="map-footer">
+            <div>📍 Mapped: {alertsWithCoordinates.length}/{filteredAlerts.length}</div>
+            <div>🏢 Sites: {sites.length}</div>
+            <div>🌏 Countries: {[...new Set(alertsWithCoordinates.map(alert => alert.coordinates?.country).filter(Boolean))].join(', ')}</div>
+            {Object.keys(coordinateStats).length > 0 && (
+              <div style={{ fontSize: "0.85em", opacity: 0.8 }}>
+                📌 Sources: {Object.entries(coordinateStats).map(([source, count]) => 
+                  `${source}: ${count}`
+                ).join(', ')}
+              </div>
+            )}
+            {lastFetchTime && (
+              <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
+                🔄 Alerts updated: {lastFetchTime.toLocaleTimeString()}
+              </div>
+            )}
+            {sitesLastFetchTime && (
+              <div style={{ fontSize: "0.8em", opacity: 0.7 }}>
+                🏗️ Sites updated: {sitesLastFetchTime.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Alert Cards */}
+        <div className="alert-cards">
+          {filteredAlerts.map((alert, index) => (
+            <AlertCard 
+              key={`${alert.title}-${alert.timestamp}-${index}`} 
+              alert={alert}
+              onCardClick={handleAlertCardClick}
+            />
+          ))}
+        </div>
+
+        {/* Alert Statistics */}
+        {/* <AlertStats alerts={filteredAlerts} />
+
+         <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0 16px 0' }}>
+          <button onClick={scrollToMap} className="jump-to-map-btn">Jump to Map</button>
+        </div> */}
+
+        {/* Debug Panel (Development only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="debug-panel">
+            <h3>🛠️ Debug Info</h3>
+            <p>Total Alerts: {alerts.length}</p>
+            <p>Geocoded: {geocodedAlerts.length}</p>
+            <p>Filtered: {filteredAlerts.length}</p>
+            <p>With Coordinates: {alertsWithCoordinates.length}</p>
+            <p>Sites: {sites.length}</p>
+            <p>Sites Loading: {isLoadingSites ? 'Yes' : 'No'}</p>
+            <p>Coordinate Sources: {JSON.stringify(coordinateStats)}</p>
+            <p>Active Notifications: {notifications.length}</p>
+            <p>Notification History: {notificationHistory.length}</p>
+            <p>Unread Count: {unreadCount}</p>
+            <p>Last Alerts Fetch: {lastFetchTime?.toLocaleString()}</p>
+            <p>Last Sites Fetch: {sitesLastFetchTime?.toLocaleString()}</p>
+          </div>
+        )}
+
+        <SlidingTogglePanel
+          showHpSites={showHpSites}
+          setShowHpSites={setShowHpSites}
+          showCorebridgeSites={showCorebridgeSites}
+          setShowCorebridgeSites={setShowCorebridgeSites}
+          hpSiteCount={hpSiteCount}
+          corebridgeSiteCount={corebridgeSiteCount}
+        />
+      </div>
+    </>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import GeocodingService from '../services/geocodingService';
+import mockAlerts from '../data/mockAlerts';
 
 const useAlertData = (showNotification) => {
   const [alerts, setAlerts] = useState([]);
@@ -11,6 +12,15 @@ const useAlertData = (showNotification) => {
   
   const geocodingServiceRef = useRef(null);
   const previousAlertsRef = useRef([]);
+
+  const USE_MOCK_PROXIMITY_DATA = true;
+  const mockProximityAlert = {
+    title: 'TEST: Mock Disaster Near Site',
+    description: 'This is a test alert for proximity detection.',
+    coordinates: [14.5995, 120.9842], // Manila
+    timestamp: new Date().toISOString(),
+    analysis: { disaster_type: 'Test' }
+  };
 
   // Function to sort alerts by date (most recent first)
   const sortAlertsByDate = (alertsArray) => {
@@ -227,6 +237,10 @@ const useAlertData = (showNotification) => {
     // This effect runs when showNotification changes
     // but we don't want to refetch data, just update the reference
   }, [showNotification]);
+
+  if (USE_MOCK_PROXIMITY_DATA) {
+    alerts.push(mockProximityAlert);
+  }
 
   return {
     alerts,

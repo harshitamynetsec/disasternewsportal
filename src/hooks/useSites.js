@@ -7,6 +7,8 @@ const useSites = () => {
   const [error, setError] = useState(null);
   const previousSitesRef = useRef([]);
 
+  const USE_MOCK_PROXIMITY_DATA = true;
+
   // Sort sites by name
   const sortSitesByName = (sitesArray) => {
     return [...sitesArray].sort((a, b) => {
@@ -156,6 +158,18 @@ const useSites = () => {
 
     return () => clearInterval(refreshInterval);
   }, []);
+
+  // Add a mock site near the mock alert for testing
+  const mockTestSite = {
+    name: 'Test Site Manila',
+    latitude: 14.5995,
+    longitude: 120.9842,
+    id: 'test-site-manila'
+  };
+
+  if (USE_MOCK_PROXIMITY_DATA) {
+    sites.push(mockTestSite);
+  }
 
   return {
     sites,
