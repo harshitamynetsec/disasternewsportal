@@ -56,7 +56,7 @@ function App() {
     geocodingProgress, 
     sortAlertsByDate,
     lastFetchTime
-  } = useAlertData(showNotification);
+  } = useAlertData(showNotification, !isLoadingSites);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);

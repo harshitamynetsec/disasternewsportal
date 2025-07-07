@@ -20,15 +20,14 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 const SIREN_SOUND = trimmedSirenSound;
 
 const ProximityAlert = () => {
-  const { sites } = useSites();
-  const { alerts } = useAlertData();
+  const { sites, isLoading: isLoadingSites } = useSites();
+  const { alerts } = useAlertData(undefined, !isLoadingSites);
   const [showAlert, setShowAlert] = useState(false);
   const [alertInfo, setAlertInfo] = useState(null);
   const audioRef = useRef(null);
+  const lastPlayedAlertKeyRef = useRef(null);
 
   useEffect(() => {
-    console.log('ProximityAlert: sites', sites);
-    console.log('ProximityAlert: alerts', alerts);
     if (!sites || !alerts) return;
     let found = false;
     let matchedAlert = null;
@@ -39,7 +38,6 @@ const ProximityAlert = () => {
           const [alertLat, alertLng] = alert.coordinates;
           const distance = getDistanceFromLatLonInKm(site.latitude, site.longitude, alertLat, alertLng);
           if (distance <= 50) {
-            console.log('Proximity match found:', {site, alert, distance});
             found = true;
             matchedAlert = alert;
             matchedSite = site;
@@ -50,15 +48,20 @@ const ProximityAlert = () => {
       if (found) break;
     }
     if (found) {
-      setAlertInfo({ alert: matchedAlert, site: matchedSite });
-      setShowAlert(true);
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play();
+      const newAlertKey = `${matchedAlert.title}-${matchedAlert.timestamp}-${matchedSite.id}`;
+      if (newAlertKey !== lastPlayedAlertKeyRef.current) {
+        setAlertInfo({ alert: matchedAlert, site: matchedSite });
+        setShowAlert(true);
+        lastPlayedAlertKeyRef.current = newAlertKey;
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        }
       }
     } else {
       setShowAlert(false);
       setAlertInfo(null);
+      lastPlayedAlertKeyRef.current = null;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;

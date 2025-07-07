@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import GeocodingService from '../services/geocodingService';
 import mockAlerts from '../data/mockAlerts';
 
-const useAlertData = (showNotification) => {
+const useAlertData = (showNotification, sitesLoaded) => {
   const [alerts, setAlerts] = useState([]);
   const [geocodedAlerts, setGeocodedAlerts] = useState([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [lastFetchTime, setLastFetchTime] = useState(null);
+  const [mockAlertInjected, setMockAlertInjected] = useState(false);
   
   const geocodingServiceRef = useRef(null);
   const previousAlertsRef = useRef([]);
@@ -238,9 +239,19 @@ const useAlertData = (showNotification) => {
     // but we don't want to refetch data, just update the reference
   }, [showNotification]);
 
-  if (USE_MOCK_PROXIMITY_DATA) {
-    alerts.push(mockProximityAlert);
-  }
+  // Add this effect to inject mock alert only after both alerts and sites are loaded
+  useEffect(() => {
+    if (
+      USE_MOCK_PROXIMITY_DATA &&
+      alerts.length > 0 &&
+      sitesLoaded &&
+      !mockAlertInjected &&
+      !alerts.some(a => a.title === mockProximityAlert.title)
+    ) {
+      setAlerts(prev => [...prev, mockProximityAlert]);
+      setMockAlertInjected(true);
+    }
+  }, [USE_MOCK_PROXIMITY_DATA, alerts, sitesLoaded, mockAlertInjected]);
 
   return {
     alerts,

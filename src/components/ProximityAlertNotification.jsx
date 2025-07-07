@@ -18,12 +18,12 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 
 const ProximityAlertNotification = () => {
-  const { sites } = useSites();
-  const { alerts } = useAlertData();
+  const { sites, isLoading: isLoadingSites } = useSites();
+  const { alerts } = useAlertData(undefined, !isLoadingSites);
   const [activeAlert, setActiveAlert] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const audioRef = useRef(null);
-  const [lastAlertKey, setLastAlertKey] = useState(null);
+  const lastPlayedAlertKeyRef = useRef(null);
   const [hasPlayed, setHasPlayed] = useState(false);
 
   // Helper to uniquely identify an alert-site pair
@@ -53,20 +53,18 @@ const ProximityAlertNotification = () => {
       }
       if (found) break;
     }
-    // Always set both alert and site, even if one is missing
     setActiveAlert({ alert: matchedAlert, site: matchedSite });
     if (found) {
       const newAlertKey = getAlertKey(matchedAlert, matchedSite);
-      // Only reset hasPlayed if this is a new alert
-      if (newAlertKey !== lastAlertKey) {
+      if (newAlertKey !== lastPlayedAlertKeyRef.current) {
         setHasPlayed(false);
-        setLastAlertKey(newAlertKey);
+        lastPlayedAlertKeyRef.current = newAlertKey;
         console.log('New proximity alert detected:', newAlertKey);
       }
     } else {
       setShowModal(false);
       setHasPlayed(false);
-      setLastAlertKey(null);
+      lastPlayedAlertKeyRef.current = null;
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -172,20 +170,14 @@ const ProximityAlertNotification = () => {
           <span role="img" aria-label="siren" style={{ fontSize: 32 }}>🚨</span>
         </button>
       )}
-      {showModal && (
+      {showModal && activeAlert && activeAlert.alert && activeAlert.site && (
         <div style={modalStyle}>
           <div style={{ ...modalBoxStyle, color: '#222' }}>
             <h2 style={{ color: '#d32f2f' }}>🚨 Disaster Alert! 🚨</h2>
-            {activeAlert && activeAlert.alert ? (
-              <>
-                <p style={{ color: '#222' }}><b>{activeAlert.alert.title || 'No title'}</b></p>
-                <p style={{ color: '#222' }}>Near site: <b>{activeAlert.site?.name || 'Unknown Site'}</b></p>
-                <p style={{ color: '#222' }}>Time: {activeAlert.alert.timestamp ? new Date(activeAlert.alert.timestamp).toLocaleTimeString() : 'Just now'}</p>
-                <p style={{ color: '#222' }}>Description: {activeAlert.alert.description || 'No description'}</p>
-              </>
-            ) : (
-              <p style={{ color: 'red' }}>No alert details available. (activeAlert: {JSON.stringify(activeAlert)})</p>
-            )}
+            <p style={{ color: '#222' }}><b>{activeAlert.alert.title || 'No title'}</b></p>
+            <p style={{ color: '#222' }}>Near site: <b>{activeAlert.site?.name || 'Unknown Site'}</b></p>
+            <p style={{ color: '#222' }}>Time: {activeAlert.alert.timestamp ? new Date(activeAlert.alert.timestamp).toLocaleTimeString() : 'Just now'}</p>
+            <p style={{ color: '#222' }}>Description: {activeAlert.alert.description || 'No description'}</p>
             <button onClick={handleCloseModal} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', fontSize: '1.1rem', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Dismiss</button>
           </div>
         </div>
