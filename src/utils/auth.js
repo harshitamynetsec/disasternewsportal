@@ -2,6 +2,11 @@ const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
 let sessions = {};
 let activityLogs = [];
 
+// --- Rate limiting and lockout additions ---
+const FAILED_ATTEMPTS_LIMIT = 5;
+const LOCKOUT_DURATION = 10 * 60 * 1000; // 10 minutes
+let failedAttempts = {}; // { email: { count, lastFailed, lockoutUntil } }
+
 export const validateEmail = (email) => {
   const mynetsecRegex = /^[a-zA-Z0-9._%+-]+@mynetsec\.com$/;
   return mynetsecRegex.test(email);
@@ -77,4 +82,40 @@ export class RateLimiter {
     this.lastAttempt = now;
     return true;
   }
+}
+
+export function recordFailedAttempt(email) {
+  if (!failedAttempts[email]) {
+    failedAttempts[email] = { count: 0, lastFailed: 0, lockoutUntil: 0 };
+  }
+  failedAttempts[email].count += 1;
+  failedAttempts[email].lastFailed = Date.now();
+  if (failedAttempts[email].count >= FAILED_ATTEMPTS_LIMIT) {
+    failedAttempts[email].lockoutUntil = Date.now() + LOCKOUT_DURATION;
+  }
+}
+
+export function isLockedOut(email) {
+  const entry = failedAttempts[email];
+  if (!entry) return false;
+  if (entry.lockoutUntil && entry.lockoutUntil > Date.now()) {
+    return true;
+  }
+  if (entry.lockoutUntil && entry.lockoutUntil <= Date.now()) {
+    // Reset after lockout expires
+    failedAttempts[email] = { count: 0, lastFailed: 0, lockoutUntil: 0 };
+    return false;
+  }
+  return false;
+}
+
+export function resetFailedAttempts(email) {
+  delete failedAttempts[email];
+}
+
+export function getAttemptsLeft(email) {
+  const entry = failedAttempts[email];
+  if (!entry) return FAILED_ATTEMPTS_LIMIT;
+  if (entry.lockoutUntil && entry.lockoutUntil > Date.now()) return 0;
+  return Math.max(0, FAILED_ATTEMPTS_LIMIT - entry.count);
 }

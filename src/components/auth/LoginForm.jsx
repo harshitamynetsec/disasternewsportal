@@ -37,7 +37,11 @@ const LoginForm = () => {
       await login(formData.email, formData.password);
       navigate('/');
     } catch (error) {
-      setErrors({ general: error.message });
+      let message = error.message;
+      if (typeof error.attemptsLeft === 'number' && error.attemptsLeft > 0 && error.attemptsLeft < 5) {
+        message += ` (${error.attemptsLeft} attempt${error.attemptsLeft === 1 ? '' : 's'} left)`;
+      }
+      setErrors({ general: message });
     }
     setIsLoading(false);
   };
