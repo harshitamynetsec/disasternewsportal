@@ -53,6 +53,7 @@ const ProximityAlertNotification = () => {
       }
       if (found) break;
     }
+    console.log('Matched alert:', matchedAlert, 'Matched site:', matchedSite);
     setActiveAlert({ alert: matchedAlert, site: matchedSite });
     if (found) {
       const newAlertKey = getAlertKey(matchedAlert, matchedSite);
@@ -82,7 +83,7 @@ const ProximityAlertNotification = () => {
 
   // Play siren only once for a new alert, never loop or repeat
   useEffect(() => {
-    if (activeAlert && audioRef.current && !hasPlayed) {
+    if (activeAlert && activeAlert.alert && activeAlert.site && audioRef.current && !hasPlayed) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
       setHasPlayed(true);
@@ -170,14 +171,30 @@ const ProximityAlertNotification = () => {
           <span role="img" aria-label="siren" style={{ fontSize: 32 }}>🚨</span>
         </button>
       )}
-      {showModal && activeAlert && activeAlert.alert && activeAlert.site && (
+      {showModal && activeAlert && (
         <div style={modalStyle}>
           <div style={{ ...modalBoxStyle, color: '#222' }}>
-            <h2 style={{ color: '#d32f2f' }}>🚨 Disaster Alert! 🚨</h2>
-            <p style={{ color: '#222' }}><b>{activeAlert.alert.title || 'No title'}</b></p>
-            <p style={{ color: '#222' }}>Near site: <b>{activeAlert.site?.name || 'Unknown Site'}</b></p>
-            <p style={{ color: '#222' }}>Time: {activeAlert.alert.timestamp ? new Date(activeAlert.alert.timestamp).toLocaleTimeString() : 'Just now'}</p>
-            <p style={{ color: '#222' }}>Description: {activeAlert.alert.description || 'No description'}</p>
+            <h2 style={{ color: '#d32f2f' }}>🚨 Disaster Alert!</h2>
+            {activeAlert.alert && activeAlert.site ? (
+              <>
+                <p style={{ color: '#222', fontWeight: 'bold', fontSize: '1.2em' }}>
+                  {activeAlert.alert.title || 'No title'}
+                </p>
+                <p style={{ color: '#222' }}>
+                  Near site: <b>{activeAlert.site?.name || 'Unknown Site'}</b>
+                </p>
+                <p style={{ color: '#222' }}>
+                  Time: {activeAlert.alert.timestamp ? new Date(activeAlert.alert.timestamp).toLocaleTimeString() : 'Just now'}
+                </p>
+                <p style={{ color: '#222' }}>
+                  Description: {activeAlert.alert.description || 'No description'}
+                </p>
+              </>
+            ) : (
+              <p style={{ color: '#222', fontWeight: 'bold', fontSize: '1.1em' }}>
+                No urgent alerts in the proximity of your site.
+              </p>
+            )}
             <button onClick={handleCloseModal} style={{ marginTop: '1rem', padding: '0.5rem 1.5rem', fontSize: '1.1rem', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Dismiss</button>
           </div>
         </div>
