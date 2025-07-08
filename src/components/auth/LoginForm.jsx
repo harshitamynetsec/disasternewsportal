@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import '../css/LoginForm.css';
 import { useAuth } from '../../context/AuthContext';
+import { sanitizeInput } from '../../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
@@ -34,7 +35,9 @@ const LoginForm = () => {
     }
 
     try {
-      await login(formData.email, formData.password);
+      const sanitizedEmail = sanitizeInput(formData.email);
+      const sanitizedPassword = sanitizeInput(formData.password);
+      await login(sanitizedEmail, sanitizedPassword);
       navigate('/');
     } catch (error) {
       let message = error.message;

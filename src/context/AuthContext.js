@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthManager, SessionManager, ActivityLogger, RateLimiter, isLockedOut, recordFailedAttempt, resetFailedAttempts, getAttemptsLeft } from '../utils/auth';
+import { AuthManager, SessionManager, ActivityLogger, RateLimiter, isLockedOut, recordFailedAttempt, resetFailedAttempts, getAttemptsLeft, sanitizeInput } from '../utils/auth';
 
 const AuthContext = createContext();
 
@@ -82,7 +82,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      if (isLockedOut(email)) {
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedPassword = sanitizeInput(password);
+      if (isLockedOut(sanitizedEmail)) {
         throw new Error('Account locked due to too many failed attempts. Try again later.');
       }
       // Rate limiting check
@@ -91,11 +93,11 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Authenticate user
-      authManager.authenticateUser(email, password);
-      resetFailedAttempts(email);
+      authManager.authenticateUser(sanitizedEmail, sanitizedPassword);
+      resetFailedAttempts(sanitizedEmail);
       // Create session
       const userData = { 
-        email, 
+        email: sanitizedEmail, 
         loginTime: new Date().toISOString(),
         role: 'user' // You can expand this based on email or other logic
       };
@@ -107,7 +109,7 @@ export const AuthProvider = ({ children }) => {
       
       // Log successful login
       activityLogger.log('login_success', { 
-        email, 
+        email: sanitizedEmail, 
         timestamp: userData.loginTime 
       });
       
