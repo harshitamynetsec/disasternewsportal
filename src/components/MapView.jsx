@@ -10,6 +10,7 @@ import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/w
 import { GiCactus, GiPoliceBadge } from 'react-icons/gi';
 import { GiVolcano, GiDesert } from 'react-icons/gi';
 import { IoLocationSharp } from 'react-icons/io5';
+import { useAuth } from '../context/AuthContext';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -697,7 +698,7 @@ function groupSitesByGeofence(sites) {
   return groups;
 }
 
-const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
+const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites, groupRadii, handleRadiusChange, canEditGeofence }) => {
   // Filter sites based on toggle states
   const hpSites = locations.filter(loc => 
     loc.type === 'site' && 
@@ -724,29 +725,34 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
   // Group sites by overlapping geofence (same logic as before)
   const groups = groupSitesByGeofence(allVisibleSites);
 
-  const groupCircles = groups.map(groupIdxs => {
+  // Map site id to groupId
+  const siteIdToGroupId = {};
+  groups.forEach((groupIdxs, groupId) => {
+    groupIdxs.forEach(idx => {
+      siteIdToGroupId[allVisibleSites[idx].id] = groupId;
+    });
+  });
+
+  const groupCircles = groups.map((groupIdxs, groupId) => {
     if (groupIdxs.length === 1) return null;
     const groupSites = groupIdxs.map(idx => allVisibleSites[idx]);
-    
-    const validGroupSites = groupSites.filter(s => 
-      typeof s.latitude === 'number' && 
-      typeof s.longitude === 'number' && 
-      !isNaN(s.latitude) && 
+    const validGroupSites = groupSites.filter(s =>
+      typeof s.latitude === 'number' &&
+      typeof s.longitude === 'number' &&
+      !isNaN(s.latitude) &&
       !isNaN(s.longitude)
     );
-    
     if (validGroupSites.length === 0) return null;
-    
     const lat = validGroupSites.reduce((sum, s) => sum + s.latitude, 0) / validGroupSites.length;
     const lng = validGroupSites.reduce((sum, s) => sum + s.longitude, 0) / validGroupSites.length;
-    
     if (isNaN(lat) || isNaN(lng)) return null;
-    
     const maxDist = Math.max(...validGroupSites.map(s => calculateDistance(lat, lng, s.latitude, s.longitude)));
+    const radius = groupRadii[groupId] || Math.max(maxDist * 1000 + 50000, 50000); // at least 50km
     return {
       center: [lat, lng],
-      radius: maxDist * 1000 + 50000,
-      members: groupIdxs
+      radius,
+      members: groupIdxs,
+      groupId
     };
   }).filter(Boolean);
 
@@ -774,12 +780,14 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
       {/* HP Site markers */}
       {hpSites.map((site, idx) => {
         const originalIdx = allVisibleSites.findIndex(s => s.id === site.id);
+        const groupId = siteIdToGroupId[site.id];
+        const groupRadius = groupRadii[groupId] || 50000;
         return (
           <React.Fragment key={`hp-${site.id}`}>
             {!groupedMarkerIdxs.has(originalIdx) && (
               <Circle
                 center={[site.latitude, site.longitude]}
-                radius={50000}
+                radius={groupRadius}
                 pathOptions={{
                   color: '#ffff00',
                   weight: 2,
@@ -795,7 +803,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
               icon={hpSiteIcon}
             >
               <Popup>
-                <div style={{ minWidth: '200px' }}>
+                <div style={{ minWidth: '220px', maxWidth: '260px' }}>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -825,6 +833,28 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
                       </div>
                     )}
                   </div>
+                  {canEditGeofence && (
+                    <div style={{ marginTop: 16, marginBottom: 4 }}>
+                      <label style={{ color: '#00fff7', fontWeight: 600, fontSize: '0.98em', display: 'block', marginBottom: 4 }}>
+                        Geofence Radius: {Math.round((groupRadii[groupId] || 50000) / 1000)} km
+                      </label>
+                      <input
+                        type="range"
+                        min={50000}
+                        max={200000}
+                        step={1000}
+                        value={groupRadii[groupId] || 50000}
+                        onChange={e => handleRadiusChange(groupId, Number(e.target.value))}
+                        style={{
+                          width: '100%',
+                          accentColor: '#00fff7',
+                          filter: 'drop-shadow(0 0 4px #00fff7cc)',
+                          marginTop: 2,
+                          marginBottom: 2
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -832,15 +862,17 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
         );
       })}
 
-      {/* CoreBridge Site markers */}
+      {/* CoreBridge Site markers (repeat the same slider logic) */}
       {corebridgeSites.map((site, idx) => {
         const originalIdx = allVisibleSites.findIndex(s => s.id === site.id);
+        const groupId = siteIdToGroupId[site.id];
+        const groupRadius = groupRadii[groupId] || 50000;
         return (
           <React.Fragment key={`cb-${site.id}`}>
             {!groupedMarkerIdxs.has(originalIdx) && (
               <Circle
                 center={[site.latitude, site.longitude]}
-                radius={50000}
+                radius={groupRadius}
                 pathOptions={{
                   color: '#ffff00',
                   weight: 2,
@@ -856,7 +888,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
               icon={hpSiteIcon}
             >
               <Popup>
-                <div style={{ minWidth: '200px' }}>
+                <div style={{ minWidth: '220px', maxWidth: '260px' }}>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -886,6 +918,28 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites }) => {
                       </div>
                     )}
                   </div>
+                  {canEditGeofence && (
+                    <div style={{ marginTop: 16, marginBottom: 4 }}>
+                      <label style={{ color: '#00fff7', fontWeight: 600, fontSize: '0.98em', display: 'block', marginBottom: 4 }}>
+                        Geofence Radius: {Math.round((groupRadii[groupId] || 50000) / 1000)} km
+                      </label>
+                      <input
+                        type="range"
+                        min={50000}
+                        max={200000}
+                        step={1000}
+                        value={groupRadii[groupId] || 50000}
+                        onChange={e => handleRadiusChange(groupId, Number(e.target.value))}
+                        style={{
+                          width: '100%',
+                          accentColor: '#00fff7',
+                          filter: 'drop-shadow(0 0 4px #00fff7cc)',
+                          marginTop: 2,
+                          marginBottom: 2
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
               </Popup>
             </Marker>
@@ -939,6 +993,16 @@ const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeS
     [focusMarker.coordinates.lat, focusMarker.coordinates.lng] : 
     null;
 
+  const [groupRadii, setGroupRadii] = useState({}); // { groupId: radius }
+
+  // Handler to update group radius
+  const handleRadiusChange = (groupId, newRadius) => {
+    setGroupRadii(prev => ({ ...prev, [groupId]: newRadius }));
+  };
+
+  const { user } = useAuth();
+  const canEditGeofence = user?.permissions?.includes('write');
+
   return (
     <div className="map-section" style={{ position: 'relative' }}>
       <AnimationStyles />
@@ -969,7 +1033,14 @@ const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeS
         </MarkerClusterGroup>
         
         {/* Render location markers (sites and emergency contacts) with neon rings */}
-        <LocationMarkers locations={locationsToShow} showHpSites={showHpSites} showCorebridgeSites={showCorebridgeSites} />
+        <LocationMarkers 
+          locations={locationsToShow} 
+          showHpSites={showHpSites} 
+          showCorebridgeSites={showCorebridgeSites} 
+          groupRadii={groupRadii} 
+          handleRadiusChange={handleRadiusChange} 
+          canEditGeofence={canEditGeofence} 
+        />
         
         {/* Add MapFocus component */}
         {focusPosition && (

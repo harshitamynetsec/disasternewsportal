@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import '../css/LoginForm.css';
 import { useAuth } from '../../context/AuthContext';
-import { sanitizeInput } from '../../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
@@ -35,16 +34,10 @@ const LoginForm = () => {
     }
 
     try {
-      const sanitizedEmail = sanitizeInput(formData.email);
-      const sanitizedPassword = sanitizeInput(formData.password);
-      await login(sanitizedEmail, sanitizedPassword);
+      await login(formData.email, formData.password);
       navigate('/');
     } catch (error) {
-      let message = error.message;
-      if (typeof error.attemptsLeft === 'number' && error.attemptsLeft > 0 && error.attemptsLeft < 5) {
-        message += ` (${error.attemptsLeft} attempt${error.attemptsLeft === 1 ? '' : 's'} left)`;
-      }
-      setErrors({ general: message });
+      setErrors({ general: error.message });
     }
     setIsLoading(false);
   };
@@ -54,16 +47,13 @@ const LoginForm = () => {
       <div className="background-grid" />
       <div className="orb-1" />
       <div className="orb-2" />
-      
       <div className="main-content">
         <div className="header">
           <h1 className="title">NSS Alert Portal</h1>
           {/* <p className="subtitle">Secure Access Portal</p> */}
         </div>
-
-        <div className="form-panel">
+        <form className="form-panel" onSubmit={handleSubmit}>
           <h2 className="form-title">Sign In</h2>
-          
           <div className="form-group">
             <label className="label">Email Address</label>
             <div className="input-container">
@@ -78,7 +68,6 @@ const LoginForm = () => {
               />
             </div>
           </div>
-
           <div className="form-group">
             <label className="label">Password</label>
             <div className="input-container">
@@ -101,7 +90,6 @@ const LoginForm = () => {
               </button>
             </div>
           </div>
-
           <div className="checkbox-container">
             <label className="checkbox-label">
               <input type="checkbox" />
@@ -111,16 +99,13 @@ const LoginForm = () => {
               Forgot password?
             </a>
           </div>
-
           {errors.general && (
             <div className="error-message">
               {errors.general}
             </div>
           )}
-
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             disabled={isLoading}
             className="submit-button"
           >
@@ -133,14 +118,12 @@ const LoginForm = () => {
               'Sign In'
             )}
           </button>
-
           <div className="demo-creds">
             <p>Demo Credentials:</p>
             <p>Email: demo@mynetsec.com</p>
             <p>Password: demo123</p>
           </div>
-        </div>
-
+        </form>
         <div className="footer">
           <p className="status-text">
            Secure •  Monitored •  Protected

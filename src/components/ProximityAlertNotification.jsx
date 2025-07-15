@@ -39,16 +39,35 @@ const ProximityAlertNotification = () => {
     let matchedAlert = null;
     let matchedSite = null;
     for (const site of sites) {
+      // Support both .lat/.lng and .latitude/.longitude
+      const siteLat = site.latitude ?? site.lat;
+      const siteLng = site.longitude ?? site.lng;
+      if (!siteLat || !siteLng) continue;
+
       for (const alert of alerts) {
-        if (site.latitude && site.longitude && alert.coordinates) {
-          const [alertLat, alertLng] = alert.coordinates;
-          const distance = getDistanceFromLatLonInKm(site.latitude, site.longitude, alertLat, alertLng);
-          if (distance <= 50) {
-            found = true;
-            matchedAlert = alert;
-            matchedSite = site;
-            break;
-          }
+        // Support both .coordinates array and .latitude/.longitude
+        let alertLat, alertLng;
+        if (Array.isArray(alert.coordinates)) {
+          [alertLat, alertLng] = alert.coordinates;
+        } else {
+          alertLat = alert.latitude;
+          alertLng = alert.longitude;
+        }
+        if (!alertLat || !alertLng) continue;
+
+        // Debug logging
+        console.log('Checking site:', site);
+        console.log('Checking alert:', alert);
+        console.log('Site coords:', siteLat, siteLng, 'Alert coords:', alertLat, alertLng);
+
+        const distance = getDistanceFromLatLonInKm(siteLat, siteLng, alertLat, alertLng);
+        console.log('Calculated distance:', distance);
+
+        if (distance <= 50) {
+          found = true;
+          matchedAlert = alert;
+          matchedSite = site;
+          break;
         }
       }
       if (found) break;
