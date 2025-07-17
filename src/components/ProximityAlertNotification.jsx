@@ -18,7 +18,7 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   return d;
 }
 
-const ProximityAlertNotification = () => {
+const ProximityAlertNotification = ({ groupRadii, canEditGeofence }) => {
   const { sites, isLoading: isLoadingSites } = useSites();
   const { alerts } = useAlertData(undefined, !isLoadingSites);
   const [proximityNotifications, setProximityNotifications] = useState([]);
@@ -33,6 +33,9 @@ const ProximityAlertNotification = () => {
       const siteLat = site.latitude ?? site.lat;
       const siteLng = site.longitude ?? site.lng;
       if (!siteLat || !siteLng) continue;
+      // Determine groupId for this site (use site.id as groupId for simplicity)
+      const groupId = site.id;
+      const radius = canEditGeofence ? (groupRadii && groupRadii[groupId] ? groupRadii[groupId] / 1000 : 50) : 50; // meters to km
       for (const alert of alerts) {
         // Skip mock test alerts
         if (alert.title && alert.title.startsWith('TEST: Mock Disaster')) continue;
@@ -45,7 +48,7 @@ const ProximityAlertNotification = () => {
         }
         if (!alertLat || !alertLng) continue;
         const distance = getDistanceFromLatLonInKm(siteLat, siteLng, alertLat, alertLng);
-        if (distance <= 50) {
+        if (distance <= radius) {
           notifications.push({
             id: `${alert.title}-${alert.timestamp}-${site.id}`,
             title: alert.title,
@@ -61,9 +64,15 @@ const ProximityAlertNotification = () => {
     // Play siren if any new notifications
     if (notifications.length > 0 && audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      // Try to play, catch promise errors
+      audioRef.current.play().catch((e) => {
+        // Ignore play interruption errors
+        if (e.name !== 'AbortError' && e.name !== 'NotAllowedError') {
+          console.warn('Audio play error:', e);
+        }
+      });
       setTimeout(() => {
-        if (audioRef.current) {
+        if (audioRef.current && !audioRef.current.paused) {
           audioRef.current.pause();
           audioRef.current.currentTime = 0;
         }
@@ -147,7 +156,9 @@ const ProximityAlertNotification = () => {
                     <div style={{ fontWeight: 'bold', fontSize: '1.1em', marginBottom: 4 }}>{alert.title}</div>
                     <div style={{ color: '#d32f2f', fontWeight: 600, marginBottom: 4 }}>Near site: {alert.location}</div>
                     <div style={{ fontSize: '0.98em', marginBottom: 4 }}>Time: {alert.time}</div>
-                    <div style={{ fontSize: '0.97em', marginBottom: 8 }}>Description: {alert.description || 'No description'}</div>
+                    <div style={{ fontSize: '0.97em', marginBottom: 8 }}>
+                      Description: {alert.description ? (alert.description.length > 120 ? alert.description.substring(0, 120) + '...' : alert.description) : 'No description'}
+                    </div>
                     <button onClick={() => handleDismiss(alert.id)} style={{ padding: '4px 16px', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Dismiss</button>
                   </div>
                 ))}

@@ -15,6 +15,7 @@ import './components/css/SlidingTogglePanel.css';
 import NSSLogo from './NSS-LOGO.png';
 import ProximityAlert from './components/ProximityAlert';
 import ProximityAlertNotification from './components/ProximityAlertNotification';
+import { useAuth } from './context/AuthContext';
 
 import "./App.css";
 
@@ -29,6 +30,12 @@ function App() {
   const [focusedAlert, setFocusedAlert] = useState(null);
   const [showHpSites, setShowHpSites] = useState(true);
   const [showCorebridgeSites, setShowCorebridgeSites] = useState(true);
+  const [groupRadii, setGroupRadii] = useState({}); // { groupId: radius }
+  const handleRadiusChange = (groupId, newRadius) => {
+    setGroupRadii(prev => ({ ...prev, [groupId]: newRadius }));
+  };
+  const { user } = useAuth();
+  const canEditGeofence = user?.permissions?.includes('write');
 
   // Get sites data from the useSites hook (only hp-sites route)
   const { 
@@ -144,7 +151,7 @@ function App() {
 
   return (
     <>
-      <ProximityAlertNotification />
+      <ProximityAlertNotification groupRadii={groupRadii} canEditGeofence={canEditGeofence} />
       <div className="App" style={{ backgroundColor: "#0c2d5c", color: "white", padding: "1rem" }}>
         {/* Sequential Notification System */}
         <NotificationManager 
@@ -223,6 +230,9 @@ function App() {
             sites={sites}
             showHpSites={showHpSites}
             showCorebridgeSites={showCorebridgeSites}
+            groupRadii={groupRadii}
+            handleRadiusChange={handleRadiusChange}
+            canEditGeofence={canEditGeofence}
           />
           <div 
             className="scroll-indicator"

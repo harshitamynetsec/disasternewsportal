@@ -950,7 +950,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites, groupRad
   );
 };
 
-const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeSites }) => {
+const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeSites, groupRadii, handleRadiusChange, canEditGeofence }) => {
   const mapRef = useRef(null);
   
   const validAlerts = alerts.filter(alert =>
@@ -992,16 +992,6 @@ const MapView = ({ alerts, focusMarker, sites = [], showHpSites, showCorebridgeS
   const focusPosition = focusMarker && focusMarker.coordinates ? 
     [focusMarker.coordinates.lat, focusMarker.coordinates.lng] : 
     null;
-
-  const [groupRadii, setGroupRadii] = useState({}); // { groupId: radius }
-
-  // Handler to update group radius
-  const handleRadiusChange = (groupId, newRadius) => {
-    setGroupRadii(prev => ({ ...prev, [groupId]: newRadius }));
-  };
-
-  const { user } = useAuth();
-  const canEditGeofence = user?.permissions?.includes('write');
 
   return (
     <div className="map-section" style={{ position: 'relative' }}>
