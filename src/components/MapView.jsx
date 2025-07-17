@@ -840,7 +840,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites, groupRad
                       </label>
                       <input
                         type="range"
-                        min={50000}
+                        min={1000}
                         max={200000}
                         step={1000}
                         value={groupRadii[groupId] || 50000}
@@ -925,7 +925,7 @@ const LocationMarkers = ({ locations, showHpSites, showCorebridgeSites, groupRad
                       </label>
                       <input
                         type="range"
-                        min={50000}
+                        min={1000}
                         max={200000}
                         step={1000}
                         value={groupRadii[groupId] || 50000}
