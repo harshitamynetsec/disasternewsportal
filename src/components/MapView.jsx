@@ -10,6 +10,7 @@ import { WiHurricane, WiTornado, WiDaySunny, WiCloudyWindy } from 'react-icons/w
 import { GiCactus, GiPoliceBadge } from 'react-icons/gi';
 import { GiVolcano, GiDesert } from 'react-icons/gi';
 import { IoLocationSharp } from 'react-icons/io5';
+import { Polyline } from "react-leaflet";
 import { useAuth } from '../context/AuthContext';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -570,6 +571,8 @@ const MapFocus = ({ position, zoom }) => {
 };
 
 // Helper component to render wrapped markers
+// ...existing code...
+
 const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   const map = useMap();
   const bounds = map.getBounds();
@@ -602,53 +605,77 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
         const lng = alert.coordinates.lng;
         const disasterType = alert.analysis?.disaster_type || "default";
         const config = disasterConfig[disasterType?.toLowerCase()] || disasterConfig.default;
+
+        // --- TRAIL LOGIC ---
+        // If alert has a trail array with at least 2 points, draw a Polyline
+        let trailPolyline = null;
+        if (Array.isArray(alert.trail) && alert.trail.length >= 2) {
+          const trailCoords = alert.trail.map(pt => [pt.latitude, pt.longitude]);
+          trailPolyline = (
+            <Polyline
+              key={`trail-${alert.title}-${idx}`}
+              positions={trailCoords}
+              pathOptions={{
+                color: "#00fff7",
+                weight: 5,
+                opacity: 0.8,
+                dashArray: "8, 12",
+                className: "storm-historical-trail"
+              }}
+            />
+          );
+        }
+
         return getWrappedLongitudes(lng).map((wrappedLng, i) => (
-          <Marker
-            key={`${alert.title}-${alert.timestamp}-${idx}-wrap${i}`}
-            position={[lat, wrappedLng]}
-            icon={createAnimatedIcon(disasterType)}
-          >
-            <Popup>
-              <div className="custom-popup">
-                <div className="popup-header">
-                  <span className="popup-icon"><config.icon size={20} color={config.color || 'white'} /></span>
-                  <span className="popup-type">{config.name}</span>
-                  <span className="popup-severity">
-                    {alert.severity || 'Medium'}
-                  </span>
-                </div>
-                <div className="popup-content">
-                  <h4>{alert.title}</h4>
-                  <p>{alert.description}</p>
-                  <div className="popup-meta">
-                    <span>🕒 {new Date(alert.timestamp).toLocaleString()}</span>
-                    {alert.location && (
-                      <span>📍 {alert.location}</span>
+          <React.Fragment key={`${alert.title}-${alert.timestamp}-${idx}-wrap${i}`}>
+            {/* Render the trail polyline if present (only once per alert, not per wrap) */}
+            {i === 0 && trailPolyline}
+            <Marker
+              position={[lat, wrappedLng]}
+              icon={createAnimatedIcon(disasterType)}
+            >
+              <Popup>
+                <div className="custom-popup">
+                  <div className="popup-header">
+                    <span className="popup-icon"><config.icon size={20} color={config.color || 'white'} /></span>
+                    <span className="popup-type">{config.name}</span>
+                    <span className="popup-severity">
+                      {alert.severity || 'Medium'}
+                    </span>
+                  </div>
+                  <div className="popup-content">
+                    <h4>{alert.title}</h4>
+                    <p>{alert.description}</p>
+                    <div className="popup-meta">
+                      <span>🕒 {new Date(alert.timestamp).toLocaleString()}</span>
+                      {alert.location && (
+                        <span>📍 {alert.location}</span>
+                      )}
+                    </div>
+                    {alert.link && (
+                      <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                        <a
+                          href={alert.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#00fff7',
+                            textDecoration: 'underline',
+                            fontWeight: 600,
+                            fontSize: '0.98em',
+                            textShadow: '0 0 6px #00fff7cc',
+                            transition: 'color 0.2s',
+                          }}
+                        >
+                          🔗 More Info
+                        </a>
+                      </div>
                     )}
                   </div>
-                  {alert.link && (
-                    <div style={{ marginTop: '12px', textAlign: 'right' }}>
-                      <a
-                        href={alert.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: '#00fff7',
-                          textDecoration: 'underline',
-                          fontWeight: 600,
-                          fontSize: '0.98em',
-                          textShadow: '0 0 6px #00fff7cc',
-                          transition: 'color 0.2s',
-                        }}
-                      >
-                        🔗 More Info
-                      </a>
-                    </div>
-                  )}
                 </div>
-              </div>
-            </Popup>
-          </Marker>
+              </Popup>
+            </Marker>
+          </React.Fragment>
         ));
       })}
     </>
