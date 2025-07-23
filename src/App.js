@@ -21,6 +21,74 @@ import "./App.css";
 
 const DisasterAnalysis = lazy(() => import("./components/DisasterAnalysis"));
 
+// Disaster categorization logic - moved to App level for consistent processing
+const categorizeDisaster = (alert) => {
+  // Natural disaster keywords
+  const naturalKeywords = [
+    'earthquake', 'tsunami', 'flood', 'hurricane', 'typhoon', 'cyclone',
+    'tornado', 'wildfire', 'fire', 'volcano', 'landslide', 'drought',
+    'blizzard', 'avalanche', 'storm', 'lightning', 'hail', 'natural',
+    'severe thunderstorm', 'weather'
+  ];
+
+  // Man-made disaster keywords
+  const manMadeKeywords = [
+    'explosion', 'accident', 'chemical', 'nuclear', 'oil spill', 'terrorist',
+    'attack', 'bombing', 'industrial', 'man made', 'man-made', 'anthropogenic',
+    'pollution', 'toxic', 'hazmat', 'cyber', 'infrastructure', 'incident'
+  ];
+
+  // Check multiple sources for disaster type
+  const sources = [
+    alert.title,
+    alert.description,
+    alert.type,
+    alert.category,
+    alert.analysis?.disaster_type,
+    alert.analysis?.disaster_category
+  ];
+
+  for (const source of sources) {
+    if (!source) continue;
+    
+    const text = source.toString().toLowerCase();
+    
+    // Direct match first
+    if (text === 'natural' || text.includes('natural disaster')) {
+      return 'natural';
+    }
+    if (text === 'man made' || text === 'man-made' || text.includes('man-made') || text.includes('anthropogenic')) {
+      return 'man made';
+    }
+    
+    // Keyword matching
+    if (naturalKeywords.some(keyword => text.includes(keyword))) {
+      return 'natural';
+    }
+    if (manMadeKeywords.some(keyword => text.includes(keyword))) {
+      return 'man made';
+    }
+  }
+  
+  return 'unknown';
+};
+
+// Process alerts to add disaster categorization
+const processAlerts = (rawAlerts) => {
+  return rawAlerts.map(alert => {
+    const disasterCategory = categorizeDisaster(alert);
+    
+    return {
+      ...alert,
+      analysis: {
+        ...alert.analysis,
+        disaster_type: disasterCategory,
+        disaster_category: disasterCategory
+      }
+    };
+  });
+};
+
 function App() {
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
@@ -31,9 +99,11 @@ function App() {
   const [showHpSites, setShowHpSites] = useState(true);
   const [showCorebridgeSites, setShowCorebridgeSites] = useState(true);
   const [groupRadii, setGroupRadii] = useState({}); // { groupId: radius }
+  
   const handleRadiusChange = (groupId, newRadius) => {
     setGroupRadii(prev => ({ ...prev, [groupId]: newRadius }));
   };
+  
   const { user } = useAuth();
   const canEditGeofence = user?.permissions?.includes('write');
 
@@ -58,12 +128,38 @@ function App() {
   // Pass showNotification to useAlertData
   const { 
     alerts, 
-    geocodedAlerts, 
+    geocodedAlerts: rawGeocodedAlerts, 
     isGeocoding, 
     geocodingProgress, 
     sortAlertsByDate,
     lastFetchTime
   } = useAlertData(showNotification, !isLoadingSites);
+
+  // Process geocoded alerts to add disaster categorization
+  const geocodedAlerts = React.useMemo(() => {
+    if (rawGeocodedAlerts.length === 0) return [];
+    return processAlerts(rawGeocodedAlerts);
+  }, [rawGeocodedAlerts]);
+
+  // Debug logging for disaster categorization
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && geocodedAlerts.length > 0) {
+      const sampleAlert = geocodedAlerts[0];
+      console.log('Sample processed alert:', {
+        title: sampleAlert.title,
+        disaster_type: sampleAlert.analysis?.disaster_type,
+        disaster_category: sampleAlert.analysis?.disaster_category
+      });
+      
+      // Count by disaster type
+      const disasterStats = geocodedAlerts.reduce((acc, alert) => {
+        const type = alert.analysis?.disaster_type || 'unknown';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('Disaster type distribution:', disasterStats);
+    }
+  }, [geocodedAlerts]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -283,13 +379,6 @@ function App() {
           ))}
         </div>
 
-        {/* Alert Statistics */}
-        {/* <AlertStats alerts={filteredAlerts} />
-
-         <div style={{ display: 'flex', justifyContent: 'center', margin: '32px 0 16px 0' }}>
-          <button onClick={scrollToMap} className="jump-to-map-btn">Jump to Map</button>
-        </div> */}
-
         {/* Debug Panel (Development only) */}
         {process.env.NODE_ENV === 'development' && (
           <div className="debug-panel">
@@ -306,6 +395,12 @@ function App() {
             <p>Unread Count: {unreadCount}</p>
             <p>Last Alerts Fetch: {lastFetchTime?.toLocaleString()}</p>
             <p>Last Sites Fetch: {sitesLastFetchTime?.toLocaleString()}</p>
+            {/* New disaster type debug info */}
+            <p>Disaster Types: {JSON.stringify(geocodedAlerts.reduce((acc, alert) => {
+              const type = alert.analysis?.disaster_type || 'unknown';
+              acc[type] = (acc[type] || 0) + 1;
+              return acc;
+            }, {}))}</p>
           </div>
         )}
 

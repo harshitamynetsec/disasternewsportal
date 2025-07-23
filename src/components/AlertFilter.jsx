@@ -4,6 +4,7 @@ import "./css/AlertFilter.css";
 const AlertFilter = ({ alerts, onFilter }) => {
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState("All");
+  const [disasterType, setDisasterType] = useState("All");
 
   const getAlertTimestamp = (alert) => {
     // Handle different timestamp formats
@@ -54,9 +55,82 @@ const AlertFilter = ({ alerts, onFilter }) => {
     return "Other";
   };
 
+  // Enhanced disaster type detection function
+  const getDisasterType = (alert) => {
+    // Check multiple possible sources for disaster type
+    const sources = [
+      alert.analysis?.disaster_type,  // Match MapView's field name
+      alert.analysis?.disaster_category, // Keep as fallback
+      alert.disaster_type,
+      alert.type,
+      alert.category,
+      alert.title,
+      alert.description
+    ];
+
+    // Natural disaster keywords (enhanced to match App.js)
+    const naturalKeywords = [
+      'earthquake', 'tsunami', 'flood', 'hurricane', 'typhoon', 'cyclone',
+      'tornado', 'wildfire', 'fire', 'volcano', 'landslide', 'drought',
+      'blizzard', 'avalanche', 'storm', 'lightning', 'hail', 'natural',
+      'severe thunderstorm', 'weather'
+    ];
+
+    // Man-made disaster keywords (enhanced to match App.js)
+    const manMadeKeywords = [
+      'explosion', 'accident', 'chemical', 'nuclear', 'oil spill', 'terrorist',
+      'attack', 'bombing', 'industrial', 'man made', 'man-made', 'anthropogenic',
+      'pollution', 'toxic', 'hazmat', 'cyber', 'infrastructure', 'incident'
+    ];
+
+    // Check each source
+    for (const source of sources) {
+      if (!source) continue;
+      
+      const text = source.toString().toLowerCase();
+      
+      // Direct match first
+      if (text === 'natural' || text.includes('natural disaster')) {
+        return 'natural';
+      }
+      if (text === 'man made' || text === 'man-made' || text.includes('man-made') || text.includes('anthropogenic')) {
+        return 'man made';
+      }
+      
+      // Keyword matching
+      if (naturalKeywords.some(keyword => text.includes(keyword))) {
+        return 'natural';
+      }
+      if (manMadeKeywords.some(keyword => text.includes(keyword))) {
+        return 'man made';
+      }
+    }
+    
+    return 'unknown';
+  };
+
+  // Debug logging (temporary - remove after testing)
+  useEffect(() => {
+    if (alerts && alerts.length > 0) {
+      console.log('AlertFilter - Sample alert structure:', alerts[0]);
+      console.log('AlertFilter - Available properties:', Object.keys(alerts[0]));
+      if (alerts[0].analysis) {
+        console.log('AlertFilter - Analysis properties:', Object.keys(alerts[0].analysis));
+        console.log('AlertFilter - Disaster type:', alerts[0].analysis.disaster_type);
+        console.log('AlertFilter - Disaster category:', alerts[0].analysis.disaster_category);
+      }
+      
+      // Test disaster type detection on first few alerts
+      const sampleAlerts = alerts.slice(0, 3);
+      sampleAlerts.forEach((alert, index) => {
+        const detectedType = getDisasterType(alert);
+        console.log(`AlertFilter - Alert ${index + 1}: "${alert.title}" -> Detected type: ${detectedType}`);
+      });
+    }
+  }, [alerts]);
+
   const handleFilter = () => {
     let filtered = alerts;
-    const now = new Date().getTime();
 
     // Search filter
     if (search) {
@@ -76,14 +150,37 @@ const AlertFilter = ({ alerts, onFilter }) => {
       filtered = filtered.filter(alert => getRegion(alert) === region);
     }
 
+    // Enhanced disaster type filter
+    if (disasterType !== "All") {
+      console.log(`AlertFilter - Filtering for disaster type: ${disasterType}`);
+      filtered = filtered.filter(alert => {
+        const alertType = getDisasterType(alert);
+        const matches = alertType === disasterType.toLowerCase();
+        
+        // Debug logging for filtering
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`AlertFilter - Alert: "${alert.title.substring(0, 50)}..." | Detected: ${alertType} | Looking for: ${disasterType.toLowerCase()} | Matches: ${matches}`);
+        }
+        
+        return matches;
+      });
+      console.log(`AlertFilter - Found ${filtered.length} alerts matching disaster type: ${disasterType}`);
+    }
+
     onFilter(filtered);
   };
 
   const handleReset = () => {
     setSearch("");
     setRegion("All");
+    setDisasterType("All");
     onFilter(alerts);
   };
+
+  // Auto-apply filters when inputs change (optional enhancement)
+  useEffect(() => {
+    handleFilter();
+  }, [search, region, disasterType, alerts]);
 
   return (
     <div className="alert-filter">
@@ -92,6 +189,7 @@ const AlertFilter = ({ alerts, onFilter }) => {
         placeholder="Search alerts..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        style={{ width: 220 }}
       />
       
       <select value={region} onChange={e => setRegion(e.target.value)}>
@@ -101,7 +199,18 @@ const AlertFilter = ({ alerts, onFilter }) => {
         <option value="EMEA">EMEA (Europe, Middle East, Africa)</option>
       </select>
 
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%' }}>
+        <select
+          value={disasterType}
+          onChange={e => setDisasterType(e.target.value)}
+          style={{ width: 220 }}
+          title="Filter by disaster category"
+        >
+          <option value="All">All Types</option>
+          <option value="natural">Natural Disasters</option>
+          <option value="man made">Man-Made Disasters</option>
+          <option value="unknown">Uncategorized</option>
+        </select>
         <button onClick={handleFilter}>Apply</button>
         <button onClick={handleReset}>Reset</button>
       </div>

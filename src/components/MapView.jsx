@@ -239,7 +239,7 @@ const createAnimatedIcon = (disasterType) => {
       </span>
     ));
   } else {
-    iconSvg = renderIconToString((props) => <config.icon size={iconSize} color="#8B4513" {...props} />);
+    iconSvg = renderIconToString((props) => <config.icon size={iconSize} color="white" {...props} />);
   }
   const markerHtml = `
     <div class="animated-marker ${config.animation}" style="
@@ -570,9 +570,6 @@ const MapFocus = ({ position, zoom }) => {
   return null;
 };
 
-// Helper component to render wrapped markers
-// ...existing code...
-
 const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
   const map = useMap();
   const bounds = map.getBounds();
@@ -591,6 +588,34 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
     return markers;
   };
 
+  // Function to detect specific disaster type for icon display
+  const getSpecificDisasterType = (alert) => {
+    const sources = [
+      alert.title?.toLowerCase() || '',
+      alert.description?.toLowerCase() || '',
+      alert.type?.toLowerCase() || '',
+      alert.category?.toLowerCase() || ''
+    ];
+    
+    const text = sources.join(' ');
+    
+    // Specific disaster type detection for icons (keeping your original icon logic)
+    if (text.includes('earthquake')) return 'earthquake';
+    if (text.includes('tsunami')) return 'tsunami';
+    if (text.includes('flood')) return 'flood';
+    if (text.includes('hurricane') || text.includes('typhoon') || text.includes('cyclone')) return 'hurricane';
+    if (text.includes('tornado')) return 'tornado';
+    if (text.includes('wildfire') || text.includes('fire')) return 'wildfire';
+    if (text.includes('volcano')) return 'volcano';
+    if (text.includes('landslide')) return 'landslide';
+    if (text.includes('drought')) return 'drought';
+    if (text.includes('storm') || text.includes('severe thunderstorm')) return 'storm';
+    if (text.includes('weather')) return 'weather';
+    if (text.includes('incident') || text.includes('accident')) return 'incident';
+    
+    return 'default';
+  };
+
   return (
     <>
       {alerts.map((alert, idx) => {
@@ -603,11 +628,12 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
         }
         const lat = alert.coordinates.lat;
         const lng = alert.coordinates.lng;
-        const disasterType = alert.analysis?.disaster_type || "default";
-        const config = disasterConfig[disasterType?.toLowerCase()] || disasterConfig.default;
+        
+        // Use specific disaster type for icon selection
+        const specificDisasterType = getSpecificDisasterType(alert);
+        const config = disasterConfig[specificDisasterType?.toLowerCase()] || disasterConfig.default;
 
-        // --- TRAIL LOGIC ---
-        // If alert has a trail array with at least 2 points, draw a Polyline
+        // --- TRAIL LOGIC (unchanged) ---
         let trailPolyline = null;
         if (Array.isArray(alert.trail) && alert.trail.length >= 2) {
           const trailCoords = alert.trail.map(pt => [pt.latitude, pt.longitude]);
@@ -628,11 +654,10 @@ const WrappedMarkers = ({ alerts, createAnimatedIcon }) => {
 
         return getWrappedLongitudes(lng).map((wrappedLng, i) => (
           <React.Fragment key={`${alert.title}-${alert.timestamp}-${idx}-wrap${i}`}>
-            {/* Render the trail polyline if present (only once per alert, not per wrap) */}
             {i === 0 && trailPolyline}
             <Marker
               position={[lat, wrappedLng]}
-              icon={createAnimatedIcon(disasterType)}
+              icon={createAnimatedIcon(specificDisasterType)}
             >
               <Popup>
                 <div className="custom-popup">
