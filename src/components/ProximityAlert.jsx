@@ -27,47 +27,51 @@ const ProximityAlert = () => {
   const audioRef = useRef(null);
   const lastPlayedAlertKeyRef = useRef(null);
 
-  useEffect(() => {
-    if (!sites || !alerts) return;
-    let found = false;
-    let matchedAlert = null;
-    let matchedSite = null;
-    for (const site of sites) {
-      for (const alert of alerts) {
-        if (site.latitude && site.longitude && alert.coordinates) {
-          const [alertLat, alertLng] = alert.coordinates;
-          const distance = getDistanceFromLatLonInKm(site.latitude, site.longitude, alertLat, alertLng);
-          if (distance <= 50) {
-            found = true;
-            matchedAlert = alert;
-            matchedSite = site;
-            break;
-          }
+ useEffect(() => {
+  if (!sites || !alerts) return;
+  let found = false;
+  let matchedAlert = null;
+  let matchedSite = null;
+  for (const site of sites) {
+    for (const alert of alerts) {
+      if (site.latitude && site.longitude && alert.coordinates) {
+        const [alertLat, alertLng] = alert.coordinates;
+        const distance = getDistanceFromLatLonInKm(site.latitude, site.longitude, alertLat, alertLng);
+        if (distance <= 50) {
+          found = true;
+          matchedAlert = alert;
+          matchedSite = site;
+          break;
         }
       }
-      if (found) break;
     }
-    if (found) {
-      const newAlertKey = `${matchedAlert.title}-${matchedAlert.timestamp}-${matchedSite.id}`;
-      if (newAlertKey !== lastPlayedAlertKeyRef.current) {
-        setAlertInfo({ alert: matchedAlert, site: matchedSite });
-        setShowAlert(true);
-        lastPlayedAlertKeyRef.current = newAlertKey;
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
-        }
+    if (found) break;
+  }
+  if (found) {
+    const newAlertKey = `${matchedAlert.title}-${matchedAlert.timestamp}-${matchedSite.id}`;
+    if (newAlertKey !== lastPlayedAlertKeyRef.current) {
+      setAlertInfo({ alert: matchedAlert, site: matchedSite });
+      setShowAlert(true);
+      lastPlayedAlertKeyRef.current = newAlertKey;
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play();
       }
-    } else {
+    }
+    // Do NOT play again if the alert key is the same
+  } else {
+    if (showAlert || alertInfo) {
       setShowAlert(false);
       setAlertInfo(null);
-      lastPlayedAlertKeyRef.current = null;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
     }
-  }, [sites, alerts]);
+    lastPlayedAlertKeyRef.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }
+  // eslint-disable-next-line
+}, [sites, alerts]);
 
   const handleClose = () => {
     setShowAlert(false);
