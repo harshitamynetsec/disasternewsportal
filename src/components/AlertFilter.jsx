@@ -2,10 +2,41 @@ import React, { useState, useEffect } from "react";
 import "./css/AlertFilter.css";
 
 const AlertFilter = ({ alerts, onFilter }) => {
-  const [search, setSearch] = useState("");
-  const [region, setRegion] = useState("All");
-  const [disasterType, setDisasterType] = useState("All");
+  // Initialize from localStorage or use defaults
+  const [search, setSearch] = useState(() => 
+    localStorage.getItem('alertFilter_search') || ""
+  );
+  const [region, setRegion] = useState(() => 
+    localStorage.getItem('alertFilter_region') || "All"
+  );
+  const [disasterType, setDisasterType] = useState(() => 
+    localStorage.getItem('alertFilter_disasterType') || "All"
+  );
 
+  // Save to localStorage whenever filters change
+  useEffect(() => {
+    localStorage.setItem('alertFilter_search', search);
+  }, [search]);
+
+  useEffect(() => {
+    localStorage.setItem('alertFilter_region', region);
+  }, [region]);
+
+  useEffect(() => {
+    localStorage.setItem('alertFilter_disasterType', disasterType);
+  }, [disasterType]);
+
+  
+  const handleReset = () => {
+    setSearch("");
+    setRegion("All");
+    setDisasterType("All");
+    // Clear localStorage on reset
+    localStorage.removeItem('alertFilter_search');
+    localStorage.removeItem('alertFilter_region');
+    localStorage.removeItem('alertFilter_disasterType');
+    onFilter(alerts);
+  };
   const getAlertTimestamp = (alert) => {
     // Handle different timestamp formats
     if (alert.timestamp) {
@@ -170,12 +201,6 @@ const AlertFilter = ({ alerts, onFilter }) => {
     onFilter(filtered);
   };
 
-  const handleReset = () => {
-    setSearch("");
-    setRegion("All");
-    setDisasterType("All");
-    onFilter(alerts);
-  };
 
   // Auto-apply filters when inputs change (optional enhancement)
   useEffect(() => {
